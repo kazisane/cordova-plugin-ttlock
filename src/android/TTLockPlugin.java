@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.apartx.cordova.ttlock;
+package com.apartx.ttlock;
 
 import android.Manifest;
 import android.app.Activity;
@@ -45,6 +45,7 @@ import com.ttlock.bl.sdk.api.ExtendedBluetoothDevice;
 public class TTLockPlugin extends CordovaPlugin {
     // actions
     private static final String PREPARE_BT_SERVICE = "prepareBTService";
+    private static final String STOP_BT_SERVICE = "stopBTService";
     private static final String START_SCAN_LOCK = "startScanLock";
     private static final String STOP_SCAN_LOCK = "stopScanLock";
 
@@ -76,16 +77,33 @@ public class TTLockPlugin extends CordovaPlugin {
         if (action.equals(PREPARE_BT_SERVICE)) {
             TTLockClient.getDefault().prepareBTService(cordova.getActivity().getApplicationContext());
             callbackContext.success();
-
+        } else if (action.equals(STOP_BT_SERVICE)) {
+          TTLockClient.getDefault().stopBTService();
+          callbackContext.success();
         } else if (action.equals(START_SCAN_LOCK)) {
           if (this.mIsScanning) {
             callbackContext.error("Already scanning");
             return true;
           }
+          JSONObject returnObj = new JSONObject();
+          returnObj.put("name", "Hello world");
+          PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, returnObj);
+          pluginResult.setKeepCallback(true);
+          callbackContext.sendPluginResult(pluginResult);
           TTLockClient.getDefault().startScanLock(new ScanLockCallback() {
             @Override
             public void onScanLockSuccess(ExtendedBluetoothDevice device) {
-
+              LOG.d(TAG, "ScanLockCallback device found");
+              JSONObject deviceObj = new JSONObject();
+              try {
+                deviceObj.put("lockData", device.getAddress());
+              } catch (Exception e) {
+                LOG.d(TAG, "action = %s", e.toString());
+              }
+              // deviceObj.put("lockMac", device.getLockMac());
+              PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
+              pluginResult.setKeepCallback(true);
+              callbackContext.sendPluginResult(pluginResult);
             }
             @Override
             public void onFail(LockError error) {
