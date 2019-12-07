@@ -35,6 +35,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+// import android.support.v4.content.ContextCompat;
+
 import java.util.*;
 
 import com.ttlock.bl.sdk.api.TTLockClient;
@@ -93,7 +95,7 @@ public class TTLockPlugin extends CordovaPlugin {
           TTLockClient.getDefault().startScanLock(new ScanLockCallback() {
             @Override
             public void onScanLockSuccess(ExtendedBluetoothDevice device) {
-              LOG.d(TAG, "ScanLockCallback device found");
+              LOG.d(TAG, "ScanLockCallback device found = %s", device.toString());
               JSONObject deviceObj = new JSONObject();
               try {
                 deviceObj.put("lockData", device.getAddress());
@@ -107,11 +109,17 @@ public class TTLockPlugin extends CordovaPlugin {
             }
             @Override
             public void onFail(LockError error) {
-
+              LOG.d(TAG, "ScanLockCallback device found error = %s", error.getErrorMsg());
             }
           });
         } else if (action.equals(STOP_SCAN_LOCK)) {
           TTLockClient.getDefault().stopScanLock();
+          callbackContext.success();
+        } else if (action.equals("isBLEEnabled")) {
+          TTLockClient.getDefault().isBLEEnabled(cordova.getActivity().getApplicationContext());
+          callbackContext.success();
+        } else if (action.equals("requestBleEnable")) {
+          TTLockClient.getDefault().requestBleEnable(cordova.getActivity());
           callbackContext.success();
         } else {
             validAction = false;
