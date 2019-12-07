@@ -36,12 +36,14 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 // import android.support.v4.content.ContextCompat;
+import com.google.gson.Gson;
 
 import java.util.*;
 
 import com.ttlock.bl.sdk.api.TTLockClient;
 import com.ttlock.bl.sdk.entity.LockError;
 import com.ttlock.bl.sdk.callback.ScanLockCallback;
+import com.ttlock.bl.sdk.callback.InitLockCallback;
 import com.ttlock.bl.sdk.api.ExtendedBluetoothDevice;
 
 public class TTLockPlugin extends CordovaPlugin {
@@ -62,6 +64,8 @@ public class TTLockPlugin extends CordovaPlugin {
 
     private Boolean mIsScanning = false;
 
+    private Map<String, ExtendedBluetoothDevice> mDevicesCache = new HashMap<String, ExtendedBluetoothDevice>();
+
     public void onDestroy() {
 
     }
@@ -77,50 +81,92 @@ public class TTLockPlugin extends CordovaPlugin {
         boolean validAction = true;
 
         if (action.equals(PREPARE_BT_SERVICE)) {
+
             TTLockClient.getDefault().prepareBTService(cordova.getActivity().getApplicationContext());
             callbackContext.success();
+
         } else if (action.equals(STOP_BT_SERVICE)) {
+
           TTLockClient.getDefault().stopBTService();
           callbackContext.success();
+
         } else if (action.equals(START_SCAN_LOCK)) {
+
           if (this.mIsScanning) {
             callbackContext.error("Already scanning");
             return true;
           }
-          JSONObject returnObj = new JSONObject();
-          returnObj.put("name", "Hello world");
-          PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, returnObj);
-          pluginResult.setKeepCallback(true);
-          callbackContext.sendPluginResult(pluginResult);
+
           TTLockClient.getDefault().startScanLock(new ScanLockCallback() {
             @Override
             public void onScanLockSuccess(ExtendedBluetoothDevice device) {
-              LOG.d(TAG, "ScanLockCallback device found = %s", device.toString());
+              LOG.d(TAG, "ScanLockCallback device found = %s", device.getName());
+
+              // Save device in cache
+              mDevicesCache.put(device.getAddress(), device);
+
               JSONObject deviceObj = new JSONObject();
               try {
-                deviceObj.put("lockData", device.getAddress());
+                deviceObj.put("address", device.getAddress());
+                deviceObj.put("name", device.getName());
               } catch (Exception e) {
-                LOG.d(TAG, "action = %s", e.toString());
+                LOG.d(TAG, "startScanLock error = %s", e.toString());
               }
-              // deviceObj.put("lockMac", device.getLockMac());
-              PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
+              Gson gson = new Gson();
+              String json = gson.toJson(device);
+              PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, json);
               pluginResult.setKeepCallback(true);
               callbackContext.sendPluginResult(pluginResult);
             }
             @Override
             public void onFail(LockError error) {
               LOG.d(TAG, "ScanLockCallback device found error = %s", error.getErrorMsg());
+              callbackContext.error(error.getErrorMsg());
             }
           });
+
         } else if (action.equals(STOP_SCAN_LOCK)) {
+
           TTLockClient.getDefault().stopScanLock();
           callbackContext.success();
+
         } else if (action.equals("isBLEEnabled")) {
+
           TTLockClient.getDefault().isBLEEnabled(cordova.getActivity().getApplicationContext());
           callbackContext.success();
+
         } else if (action.equals("requestBleEnable")) {
+
           TTLockClient.getDefault().requestBleEnable(cordova.getActivity());
           callbackContext.success();
+
+        } else if (action.equals("initLock")) {
+
+          Gson gson = new Gson();
+          ExtendedBluetoothDevice device = gson.fromJson(args.getString(0), ExtendedBluetoothDevice.class);
+          ExtendedBluetoothDevice _device = mDevicesCache.get(device.getAddress());
+          TTLockClient.getDefault().initLock(_device, new InitLockCallback() {
+            @Override
+            public void onInitLockSuccess(String lockData,int specialValue) {
+              //init success
+              JSONObject deviceObj = new JSONObject();
+              try {
+                deviceObj.put("lockData", lockData);
+                deviceObj.put("specialValue", specialValue);
+              } catch (Exception e) {
+                LOG.d(TAG, "initLock error = %s", e.toString());
+              }
+              PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
+              callbackContext.sendPluginResult(pluginResult);
+            }
+
+            @Override
+            public void onFail(LockError error) {
+              //failed
+              callbackContext.error(error.getErrorMsg());
+            }
+          });
+
         } else {
             validAction = false;
         }

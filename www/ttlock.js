@@ -119,26 +119,36 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   return newRequire;
 })({"URSD":[function(require,module,exports) {
 (function () {
-  var ttlock, ttlockName;
+  var exec, ttlock, ttlockName;
   ttlockName = 'TTLockPlugin';
+
+  exec = function exec(method, params) {
+    return new Promise(function (resolve, reject) {
+      return cordova.exec(resolve, reject, ttlockName, method, params);
+    });
+  };
+
   ttlock = {
-    prepareBTService: function prepareBTService(successCallback) {
-      return cordova.exec(successCallback, successCallback, ttlockName, 'prepareBTService', []);
+    prepareBTService: function prepareBTService() {
+      return exec('prepareBTService', []);
     },
-    stopBTService: function stopBTService(successCallback) {
-      return cordova.exec(successCallback, successCallback, ttlockName, 'stopBTService', []);
+    stopBTService: function stopBTService() {
+      return exec('stopBTService', []);
     },
-    startScanLock: function startScanLock(successCallback, errorCallback) {
-      return cordova.exec(successCallback, errorCallback, ttlockName, 'startScanLock', []);
+    startScanLock: function startScanLock(resolve, reject) {
+      return cordova.exec(resolve, reject, ttlockName, 'startScanLock', []);
     },
-    stopScanLock: function stopScanLock(successCallback, errorCallback) {
-      return cordova.exec(successCallback, errorCallback, ttlockName, 'stopScanLock', []);
+    stopScanLock: function stopScanLock() {
+      return exec('stopScanLock', []);
     },
-    isBLEEnabled: function isBLEEnabled(successCallback, errorCallback) {
-      return cordova.exec(successCallback, errorCallback, ttlockName, 'isBLEEnabled', []);
+    isBLEEnabled: function isBLEEnabled() {
+      return exec('isBLEEnabled', []);
     },
-    requestBleEnable: function requestBleEnable(successCallback, errorCallback) {
-      return cordova.exec(successCallback, errorCallback, ttlockName, 'requestBleEnable', []);
+    requestBleEnable: function requestBleEnable() {
+      return exec('requestBleEnable', []);
+    },
+    initLock: function initLock(address) {
+      return exec('initLock', [address]);
     }
   };
   module.exports = ttlock;
