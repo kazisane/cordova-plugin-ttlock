@@ -44,7 +44,10 @@ import com.ttlock.bl.sdk.api.TTLockClient;
 import com.ttlock.bl.sdk.entity.LockError;
 import com.ttlock.bl.sdk.callback.ScanLockCallback;
 import com.ttlock.bl.sdk.callback.InitLockCallback;
+import com.ttlock.bl.sdk.callback.ControlLockCallback;
+import com.ttlock.bl.sdk.callback.GetLockTimeCallback;
 import com.ttlock.bl.sdk.api.ExtendedBluetoothDevice;
+import com.ttlock.bl.sdk.constant.ControlAction;
 
 public class TTLockPlugin extends CordovaPlugin {
     // actions
@@ -145,6 +148,7 @@ public class TTLockPlugin extends CordovaPlugin {
           Gson gson = new Gson();
           ExtendedBluetoothDevice device = gson.fromJson(args.getString(0), ExtendedBluetoothDevice.class);
           ExtendedBluetoothDevice _device = mDevicesCache.get(device.getAddress());
+          LOG.d(TAG, "initLock = %s", _device.toString());
           TTLockClient.getDefault().initLock(_device, new InitLockCallback() {
             @Override
             public void onInitLockSuccess(String lockData,int specialValue) {
@@ -163,9 +167,61 @@ public class TTLockPlugin extends CordovaPlugin {
             @Override
             public void onFail(LockError error) {
               //failed
+              LOG.d(TAG, "initLock onFail = %s", error.getErrorMsg());
               callbackContext.error(error.getErrorMsg());
             }
           });
+
+        } else if (action.equals("controlLock")) {
+
+          int controlAction = args.getInt(0);
+          String lockData = args.getString(1);
+          String lockMac = args.getString(2);
+          TTLockClient.getDefault().controlLock(controlAction, lockData, lockMac, new ControlLockCallback() {
+            @Override
+            public void onControlLockSuccess(int lockAction, int battery, int uniqueId) {
+              JSONObject deviceObj = new JSONObject();
+              try {
+                deviceObj.put("lockAction", lockAction);
+                deviceObj.put("battery", battery);
+                deviceObj.put("uniqueId", uniqueId);
+              } catch (Exception e) {
+                LOG.d(TAG, "controlLock error = %s", e.toString());
+              }
+              PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
+              callbackContext.sendPluginResult(pluginResult);
+            }
+
+            @Override
+            public void onFail(LockError error) {
+              LOG.d(TAG, "controlLock onFail = %s", error.getErrorMsg());
+              callbackContext.error(error.getErrorMsg());
+            }
+        });
+
+      } else if (action.equals("getLockTime")) {
+
+          String lockData = args.getString(0);
+          String lockMac = args.getString(1);
+          TTLockClient.getDefault().getLockTime(lockData, lockMac, new GetLockTimeCallback() {
+            @Override
+            public void onGetLockTimeSuccess(long lockTimestamp) {
+              JSONObject deviceObj = new JSONObject();
+              try {
+                deviceObj.put("lockTimestamp", lockTimestamp);
+              } catch (Exception e) {
+                LOG.d(TAG, "getLockTime error = %s", e.toString());
+              }
+              PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
+              callbackContext.sendPluginResult(pluginResult);
+            }
+
+            @Override
+            public void onFail(LockError error) {
+              LOG.d(TAG, "getLockTime onFail = %s", error.getErrorMsg());
+              callbackContext.error(error.getErrorMsg());
+            }
+        });
 
         } else {
             validAction = false;

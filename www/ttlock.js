@@ -149,7 +149,17 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     },
     initLock: function initLock(address) {
       return exec('initLock', [address]);
+    },
+    controlLock: function controlLock(controlAction, lockData, lockMac) {
+      return exec('controlLock', [controlAction, lockData, lockMac]);
+    },
+    getLockTime: function getLockTime(lockData, lockMac) {
+      return exec('getLockTime', [lockData, lockMac]);
     }
+  };
+  ttlock.ControlAction = {
+    Unlock: 3,
+    Lock: 6
   };
   module.exports = ttlock;
 }).call(this);

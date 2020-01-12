@@ -11,6 +11,14 @@ ttlock = {
   isBLEEnabled: -> exec 'isBLEEnabled', []
   requestBleEnable: -> exec 'requestBleEnable', []
   initLock: (address) -> exec 'initLock', [address]
+  controlLock: (controlAction, lockData, lockMac) -> exec 'controlLock', [controlAction, lockData, lockMac]
+  getLockTime: (lockData, lockMac) -> exec 'getLockTime', [lockData, lockMac]
 
 }
+
+ttlock.ControlAction = {
+  Unlock: 3
+  Lock: 6
+}
+
 module.exports = ttlock
