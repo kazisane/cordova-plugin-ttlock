@@ -119,7 +119,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   return newRequire;
 })({"URSD":[function(require,module,exports) {
 (function () {
-  var exec, ttlock, ttlockName;
+  var exec, gateway, ttlock, ttlockName;
   ttlockName = 'TTLockPlugin';
 
   exec = function exec(method, params) {
@@ -129,39 +129,77 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   };
 
   ttlock = {
-    prepareBTService: function prepareBTService() {
-      return exec('prepareBTService', []);
-    },
-    stopBTService: function stopBTService() {
-      return exec('stopBTService', []);
-    },
-    startScanLock: function startScanLock(resolve, reject) {
-      return cordova.exec(resolve, reject, ttlockName, 'startScanLock', []);
-    },
-    stopScanLock: function stopScanLock() {
-      return exec('stopScanLock', []);
-    },
     isBLEEnabled: function isBLEEnabled() {
-      return exec('isBLEEnabled', []);
+      return exec('lock_isBLEEnabled', []);
     },
     requestBleEnable: function requestBleEnable() {
-      return exec('requestBleEnable', []);
+      return exec('lock_requestBleEnable', []);
+    },
+    prepareBTService: function prepareBTService() {
+      return exec('lock_prepareBTService', []);
+    },
+    stopBTService: function stopBTService() {
+      return exec('lock_stopBTService', []);
+    },
+    startScanLock: function startScanLock(resolve, reject) {
+      return cordova.exec(resolve, reject, ttlockName, 'lock_startScanLock', []);
+    },
+    stopScanLock: function stopScanLock() {
+      return exec('lock_stopScanLock', []);
     },
     initLock: function initLock(address) {
-      return exec('initLock', [address]);
+      return exec('lock_initLock', [address]);
     },
     controlLock: function controlLock(controlAction, lockData, lockMac) {
-      return exec('controlLock', [controlAction, lockData, lockMac]);
+      return exec('lock_controlLock', [controlAction, lockData, lockMac]);
     },
     getLockTime: function getLockTime(lockData, lockMac) {
-      return exec('getLockTime', [lockData, lockMac]);
+      return exec('lock_getLockTime', [lockData, lockMac]);
+    },
+    getRemoteUnlockSwitchState: function getRemoteUnlockSwitchState(lockData, lockMac) {
+      return exec('lock_getRemoteUnlockSwitchState', [lockData, lockMac]);
+    },
+    setRemoteUnlockSwitchState: function setRemoteUnlockSwitchState(enabled, lockData, lockMac) {
+      return exec('lock_setRemoteUnlockSwitchState', [enabled, lockData, lockMac]);
+    }
+  };
+  gateway = {
+    isBLEEnabled: function isBLEEnabled() {
+      return exec('gateway_isBLEEnabled', []);
+    },
+    requestBleEnable: function requestBleEnable() {
+      return exec('gateway_requestBleEnable', []);
+    },
+    prepareBTService: function prepareBTService() {
+      return exec('gateway_prepareBTService', []);
+    },
+    stopBTService: function stopBTService() {
+      return exec('gateway_stopBTService', []);
+    },
+    startScanGateway: function startScanGateway(resolve, reject) {
+      return cordova.exec(resolve, reject, ttlockName, 'gateway_startScanGateway', []);
+    },
+    stopScanGateway: function stopScanGateway() {
+      return exec('gateway_stopScanGateway', []);
+    },
+    connectGateway: function connectGateway(gatewayMac) {
+      return exec('gateway_connectGateway', [gatewayMac]);
+    },
+    initGateway: function initGateway(gatewayMac, uid, userPwd, ssid, wifiPwd) {
+      return exec('gateway_initGateway', [gatewayMac, uid, userPwd, ssid, wifiPwd]);
+    },
+    scanWiFiByGateway: function scanWiFiByGateway(gatewayMac, resolve, reject) {
+      return cordova.exec(resolve, reject, ttlockName, 'gateway_scanWiFiByGateway', [gatewayMac]);
     }
   };
   ttlock.ControlAction = {
     Unlock: 3,
     Lock: 6
   };
-  module.exports = ttlock;
+  module.exports = {
+    Lock: ttlock,
+    Gateway: gateway
+  };
 }).call(this);
 },{}]},{},["URSD"], null)
 //# sourceMappingURL=ttlock.js.map
