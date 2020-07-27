@@ -129,6 +129,26 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   };
 
   ttlock = {
+    // Universal
+    startScan: function startScan(resolve, reject) {
+      return cordova.exec(resolve, reject, ttlockName, 'lock_startScan', []);
+    },
+    stopScan: function stopScan() {
+      return exec('lock_stopScan', []);
+    },
+    init: function init(address) {
+      return exec('lock_init', [address]);
+    },
+    controlLock: function controlLock(controlAction, lockData, lockMac) {
+      return exec('lock_control', [controlAction, lockData, lockMac]);
+    },
+    getTime: function getTime(lockData, lockMac) {
+      return exec('lock_getTime', [lockData, lockMac]);
+    },
+    setTime: function setTime(lockData, lockMac, time) {
+      return exec('lock_getTime', [lockData, lockMac, time]);
+    },
+    // Android
     isBLEEnabled: function isBLEEnabled() {
       return exec('lock_isBLEEnabled', []);
     },
@@ -141,26 +161,15 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     stopBTService: function stopBTService() {
       return exec('lock_stopBTService', []);
     },
-    startScanLock: function startScanLock(resolve, reject) {
-      return cordova.exec(resolve, reject, ttlockName, 'lock_startScanLock', []);
-    },
-    stopScanLock: function stopScanLock() {
-      return exec('lock_stopScanLock', []);
-    },
-    initLock: function initLock(address) {
-      return exec('lock_initLock', [address]);
-    },
-    controlLock: function controlLock(controlAction, lockData, lockMac) {
-      return exec('lock_controlLock', [controlAction, lockData, lockMac]);
-    },
-    getLockTime: function getLockTime(lockData, lockMac) {
-      return exec('lock_getLockTime', [lockData, lockMac]);
-    },
     getRemoteUnlockSwitchState: function getRemoteUnlockSwitchState(lockData, lockMac) {
       return exec('lock_getRemoteUnlockSwitchState', [lockData, lockMac]);
     },
     setRemoteUnlockSwitchState: function setRemoteUnlockSwitchState(enabled, lockData, lockMac) {
       return exec('lock_setRemoteUnlockSwitchState', [enabled, lockData, lockMac]);
+    },
+    // IOS
+    setupBluetooth: function setupBluetooth() {
+      return exec('lock_setupBluetooth', []);
     }
   };
   gateway = {
@@ -195,6 +204,14 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   ttlock.ControlAction = {
     Unlock: 3,
     Lock: 6
+  };
+  ttlock.BluetoothState = {
+    Unknown: 0,
+    Resetting: 1,
+    Unsupported: 2,
+    Unauthorized: 3,
+    PoweredOff: 4,
+    PoweredOn: 5
   };
   module.exports = {
     Lock: ttlock,

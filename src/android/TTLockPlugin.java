@@ -136,13 +136,13 @@ public class TTLockPlugin extends CordovaPlugin {
 		callbackContext.success();
   }
 
-  public void lock_startScanLock(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+  public void lock_startScan(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     if (this.mIsScanning) {
       callbackContext.error("Already scanning");
       return;
     }
 
-    ttlockClient.startScanLock(new ScanLockCallback() {
+    ttlockClient.startScan(new ScanLockCallback() {
       @Override
       public void onScanLockSuccess(ExtendedBluetoothDevice device) {
         LOG.d(TAG, "ScanLockCallback device found = %s", device.getName());
@@ -171,12 +171,12 @@ public class TTLockPlugin extends CordovaPlugin {
     });
   }
 
-  public void lock_stopScanLock(CordovaArgs args, CallbackContext callbackContext) {
+  public void lock_stopScan(CordovaArgs args, CallbackContext callbackContext) {
     ttlockClient.stopScanLock();
     callbackContext.success();
   }
 
-  public void lock_initLock(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+  public void lock_init(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     Gson gson = new Gson();
     ExtendedBluetoothDevice device = gson.fromJson(args.getString(0), ExtendedBluetoothDevice.class);
     ExtendedBluetoothDevice _device = mDevicesCache.get(device.getAddress());
@@ -205,7 +205,7 @@ public class TTLockPlugin extends CordovaPlugin {
     });
   }
 
-  public void lock_controlLock(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+  public void lock_control(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     int controlAction = args.getInt(0);
     String lockData = args.getString(1);
     String lockMac = args.getString(2);
@@ -232,7 +232,7 @@ public class TTLockPlugin extends CordovaPlugin {
     });
   }
 
-  public void lock_getLockTime(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+  public void lock_getTime(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     String lockData = args.getString(0);
     String lockMac = args.getString(1);
     ttlockClient.getLockTime(lockData, lockMac, new GetLockTimeCallback() {
@@ -329,7 +329,7 @@ public class TTLockPlugin extends CordovaPlugin {
 		callbackContext.success();
   }
 
-  public void gateway_startScanGateway(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+  public void gateway_startScan(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     if (this.mIsScanning) {
       callbackContext.error("Already scanning");
       return;
@@ -364,12 +364,12 @@ public class TTLockPlugin extends CordovaPlugin {
     });
   }
 
-  public void gateway_stopScanGateway(CordovaArgs args, CallbackContext callbackContext) {
+  public void gateway_stopScan(CordovaArgs args, CallbackContext callbackContext) {
     gatewayClient.stopScanGateway();
     callbackContext.success();
   }
 
-  public void gateway_connectGateway(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+  public void gateway_connect(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     String gatewayMac = args.getString(0);
     // LOG.d(TAG, "connectGateway = %s", _device.toString());
     gatewayClient.connectGateway(gatewayMac, new ConnectCallback() {
@@ -402,7 +402,7 @@ public class TTLockPlugin extends CordovaPlugin {
     });
   }
 
-  public void gateway_initGateway(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+  public void gateway_init(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     ConfigureGatewayInfo configureGatewayInfo;
     configureGatewayInfo.plugName = args.getString(0);
     configureGatewayInfo.uid = args.getString(1);
@@ -436,7 +436,7 @@ public class TTLockPlugin extends CordovaPlugin {
     });
   }
 
-  public void gateway_scanWiFiByGateway(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+  public void gateway_scanWiFi(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     String gatewayMac = args.getString(0);
     
     LOG.d(TAG, "scanWiFiByGateway = %s", configureGatewayInfo.plugName);
