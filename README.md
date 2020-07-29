@@ -3,5 +3,5 @@
 ## Platform support
 
 - Android - yes
-- IOS - yes (not tested)
+- IOS - yes
 
