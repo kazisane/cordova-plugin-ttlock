@@ -45,6 +45,7 @@ import com.ttlock.bl.sdk.api.TTLockClient;
 import com.ttlock.bl.sdk.entity.LockError;
 import com.ttlock.bl.sdk.callback.ScanLockCallback;
 import com.ttlock.bl.sdk.callback.InitLockCallback;
+import com.ttlock.bl.sdk.callback.ResetLockCallback;
 import com.ttlock.bl.sdk.callback.ControlLockCallback;
 import com.ttlock.bl.sdk.callback.GetLockTimeCallback;
 import com.ttlock.bl.sdk.callback.SetRemoteUnlockSwitchCallback;
@@ -205,6 +206,34 @@ public class TTLockPlugin extends CordovaPlugin {
     });
   }
 
+  public void lock_reset(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String lockData = args.getString(0);
+    String lockMac = args.getString(1);
+    LOG.d(TAG, "lock_reset = %s", lockMac.toString());
+    ttlockClient.resetLock(lockData, lockMac, new ResetLockCallback() {
+      @Override
+      public void onResetLockSuccess(String lockData, int specialValue) {
+        //init success
+        JSONObject deviceObj = new JSONObject();
+        try {
+          deviceObj.put("lockData", lockData);
+          deviceObj.put("specialValue", specialValue);
+        } catch (Exception e) {
+          LOG.d(TAG, "initLock error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
+        callbackContext.sendPluginResult(pluginResult);
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        //failed
+        LOG.d(TAG, "initLock onFail = %s", error.getErrorMsg());
+        callbackContext.error(error.getErrorMsg());
+      }
+    });
+  }
+
   public void lock_control(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     int controlAction = args.getInt(0);
     String lockData = args.getString(1);
@@ -257,9 +286,9 @@ public class TTLockPlugin extends CordovaPlugin {
   }
 
   public void lock_setRemoteUnlockSwitchState(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-    Boolean enabled = args.getBoolean(0);
-    String lockData = args.getString(1);
-    String lockMac = args.getString(2);
+    String lockData = args.getString(0);
+    String lockMac = args.getString(1);
+    Boolean enabled = args.getBoolean(2);
     ttlockClient.setRemoteUnlockSwitchState(enabled, lockData, lockMac, new SetRemoteUnlockSwitchCallback() {
       @Override
       public void onSetRemoteUnlockSwitchSuccess(int specialValue) {

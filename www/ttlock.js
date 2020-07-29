@@ -119,7 +119,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   return newRequire;
 })({"URSD":[function(require,module,exports) {
 (function () {
-  var exec, gateway, ttlock, ttlockName;
+  var Gateway, Lock, TTLock, exec, ttlockName;
   ttlockName = 'TTLockPlugin';
 
   exec = function exec(method, params) {
@@ -128,7 +128,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     });
   };
 
-  ttlock = {
+  Lock = {
     // Universal
     startScan: function startScan(resolve, reject) {
       return cordova.exec(resolve, reject, ttlockName, 'lock_startScan', []);
@@ -136,10 +136,13 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     stopScan: function stopScan() {
       return exec('lock_stopScan', []);
     },
-    init: function init(address) {
-      return exec('lock_init', [address]);
+    init: function init(lockMac, lockName, lockVersion) {
+      return exec('lock_init', [lockMac, lockName, lockVersion]);
     },
-    controlLock: function controlLock(controlAction, lockData, lockMac) {
+    reset: function reset(lockData, lockMac) {
+      return exec('lock_reset', [lockData, lockMac]);
+    },
+    control: function control(controlAction, lockData, lockMac) {
       return exec('lock_control', [controlAction, lockData, lockMac]);
     },
     getTime: function getTime(lockData, lockMac) {
@@ -164,15 +167,15 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     getRemoteUnlockSwitchState: function getRemoteUnlockSwitchState(lockData, lockMac) {
       return exec('lock_getRemoteUnlockSwitchState', [lockData, lockMac]);
     },
-    setRemoteUnlockSwitchState: function setRemoteUnlockSwitchState(enabled, lockData, lockMac) {
-      return exec('lock_setRemoteUnlockSwitchState', [enabled, lockData, lockMac]);
+    setRemoteUnlockSwitchState: function setRemoteUnlockSwitchState(lockData, lockMac) {
+      return exec('lock_setRemoteUnlockSwitchState', [lockData, lockMac, enabled]);
     },
     // IOS
     setupBluetooth: function setupBluetooth() {
       return exec('lock_setupBluetooth', []);
     }
   };
-  gateway = {
+  Gateway = {
     isBLEEnabled: function isBLEEnabled() {
       return exec('gateway_isBLEEnabled', []);
     },
@@ -185,27 +188,37 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     stopBTService: function stopBTService() {
       return exec('gateway_stopBTService', []);
     },
-    startScanGateway: function startScanGateway(resolve, reject) {
-      return cordova.exec(resolve, reject, ttlockName, 'gateway_startScanGateway', []);
+    startScan: function startScan(resolve, reject) {
+      return cordova.exec(resolve, reject, ttlockName, 'gateway_startScan', []);
     },
-    stopScanGateway: function stopScanGateway() {
-      return exec('gateway_stopScanGateway', []);
+    stopScan: function stopScan() {
+      return exec('gateway_stopScan', []);
     },
-    connectGateway: function connectGateway(gatewayMac) {
-      return exec('gateway_connectGateway', [gatewayMac]);
+    connect: function connect(gatewayMac) {
+      return exec('gateway_connect', [gatewayMac]);
     },
-    initGateway: function initGateway(gatewayMac, uid, userPwd, ssid, wifiPwd) {
-      return exec('gateway_initGateway', [gatewayMac, uid, userPwd, ssid, wifiPwd]);
+    disconnect: function disconnect(gatewayMac) {
+      return exec('gateway_disconnect', [gatewayMac]);
     },
-    scanWiFiByGateway: function scanWiFiByGateway(gatewayMac, resolve, reject) {
-      return cordova.exec(resolve, reject, ttlockName, 'gateway_scanWiFiByGateway', [gatewayMac]);
+    init: function init(gatewayMac, uid, userPwd, ssid, wifiPwd) {
+      return exec('gateway_init', [gatewayMac, uid, userPwd, ssid, wifiPwd]);
+    },
+    scanWiFi: function scanWiFi(gatewayMac, resolve, reject) {
+      return cordova.exec(resolve, reject, ttlockName, 'gateway_scanWiFi', [gatewayMac]);
+    },
+    upgrade: function upgrade(gatewayMac) {
+      return exec('gateway_upgrade', [gatewayMac]);
     }
   };
-  ttlock.ControlAction = {
+  TTLock = {
+    Lock: Lock,
+    Gateway: Gateway
+  };
+  TTLock.ControlAction = {
     Unlock: 3,
     Lock: 6
   };
-  ttlock.BluetoothState = {
+  TTLock.BluetoothState = {
     Unknown: 0,
     Resetting: 1,
     Unsupported: 2,
@@ -213,10 +226,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     PoweredOff: 4,
     PoweredOn: 5
   };
-  module.exports = {
-    Lock: ttlock,
-    Gateway: gateway
-  };
+  module.exports = TTLock;
 }).call(this);
 },{}]},{},["URSD"], null)
 //# sourceMappingURL=ttlock.js.map

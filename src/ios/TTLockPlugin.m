@@ -17,8 +17,9 @@
   NSLog(@"##############  TTLockPlugin lock_startScan  ##############");
   [TTLock startScan:^(TTScanModel *scanModel) {
     NSDictionary *device = [NSDictionary dictionaryWithObjectsAndKeys:
-      scanModel.lockName, @"lockName",
-      scanModel.lockMac, @"lockMac",
+      scanModel.lockName, @"name",
+      scanModel.lockMac, @"address",
+      scanModel.lockVersion, @"version",
     nil];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:device];
     [pluginResult setKeepCallbackAsBool:true];
@@ -33,19 +34,44 @@
 }
 
 - (void)lock_init:(CDVInvokedUrlCommand *)command {
-  NSDictionary *arguments = [self getArgsObject:command.arguments];
+  NSString *lockMac = (NSString *)[command argumentAtIndex:0];
+  NSString *lockName = (NSString *)[command argumentAtIndex:1];
+  NSString *lockVersion = (NSString *)[command argumentAtIndex:2];
+
+  NSDictionary *arguments = [NSDictionary dictionaryWithObjectsAndKeys:
+    lockMac, @"lockMac",
+    lockName, @"lockName",
+    lockVersion, @"lockVersion",
+  nil];
 
   [TTLock initLockWithDict:arguments success:^(NSString *lockData, long long specialValue) {
     NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
       lockData, @"lockData",
-      specialValue, @"specialValue",
+                                [NSNumber numberWithLongLong:specialValue], @"specialValue",
     nil];
     
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
   } failure:^(TTError errorCode, NSString *errorMsg) {
     NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
-      [NSNumber numberWithInt:(int)errorCode], @"errorCode",
+      [NSNumber numberWithInteger:errorCode], @"errorCode",
+      errorMsg, @"errorMessage",
+    nil];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    NSLog(@"%@",errorMsg);
+  }];
+}
+
+- (void)lock_reset:(CDVInvokedUrlCommand *)command {
+  NSString *lockData = (NSString *)[command argumentAtIndex:0];
+
+  [TTLock resetLockWithLockData:lockData success:^(void) {
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+  } failure:^(TTError errorCode, NSString *errorMsg) {
+    NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
+      [NSNumber numberWithInteger:errorCode], @"errorCode",
       errorMsg, @"errorMessage",
     nil];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
@@ -55,22 +81,22 @@
 }
 
 - (void)lock_control:(CDVInvokedUrlCommand *)command {
-  NSString *lockData = (NSString *)[command argumentAtIndex:0];
-  NSInteger action = (NSInteger)[command argumentAtIndex:1];
+  TTControlAction action = (TTControlAction)[(NSNumber *)[command argumentAtIndex:0] integerValue];
+  NSString *lockData = (NSString *)[command argumentAtIndex:1];
 
-  [TTLock controlLockWithControlAction:acton lockData:lockData success:^(long long lockTime, NSInteger electricQuantity, long long uniqueId) {
+  [TTLock controlLockWithControlAction:action lockData:lockData success:^(long long lockTime, NSInteger electricQuantity, long long uniqueId) {
     NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
-      lockTime, @"lockTime",
-      lockTime, @"lockAction",
-      electricQuantity, @"battery",
-      electricQuantity, @"electricQuantity",
-      uniqueId, @"uniqueId"
+      [NSNumber numberWithLongLong:lockTime], @"lockTime",
+      [NSNumber numberWithLongLong:lockTime], @"lockAction",
+      [NSNumber numberWithInteger:electricQuantity], @"battery",
+      [NSNumber numberWithInteger:electricQuantity], @"electricQuantity",
+      [NSNumber numberWithLongLong:uniqueId], @"uniqueId",
     nil];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
   } failure:^(TTError errorCode, NSString *errorMsg) {
     NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
-      [NSNumber numberWithInt:(int)errorCode], @"errorCode",
+      [NSNumber numberWithInteger:errorCode], @"errorCode",
       errorMsg, @"errorMessage",
     nil];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
@@ -85,14 +111,14 @@
   [TTLock getLockTimeWithLockData:lockData
     success:^(long long timestamp) {
       NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
-        timestamp, @"timestamp",
+        [NSNumber numberWithLongLong:timestamp], @"timestamp",
       nil];
       CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
-    failure:(TTError errorCode, NSString *errorMsg) {
+    failure:^(TTError errorCode, NSString *errorMsg) {
       NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
-        [NSNumber numberWithInt:(int)errorCode], @"errorCode",
+        [NSNumber numberWithInteger:errorCode], @"errorCode",
         errorMsg, @"errorMessage",
       nil];
       CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
@@ -103,41 +129,22 @@
 
 - (void)lock_setTime:(CDVInvokedUrlCommand *)command {
   NSString *lockData = (NSString *)[command argumentAtIndex:0];
-  (long long) timestamp = (long long)[command argumentAtIndex:1];
+  long long timestamp = (long long)[command argumentAtIndex:1];
 
   [TTLock setLockTimeWithTimestamp:timestamp lockData:lockData
     success:^(void) {
       CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
-    failure:(TTError errorCode, NSString *errorMsg) {
+    failure:^(TTError errorCode, NSString *errorMsg) {
       NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
-        [NSNumber numberWithInt:(int)errorCode], @"errorCode",
+        [NSNumber numberWithInteger:errorCode], @"errorCode",
         errorMsg, @"errorMessage",
       nil];
       CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
   ];
-}
-
-//General Helpers
-- (NSDictionary*)getArgsObject:(NSArray *)args {
-  if (args == nil) {
-    return nil;
-  }
-
-  if (args.count != 1) {
-    return nil;
-  }
-
-  NSObject* arg = [args objectAtIndex:0];
-
-  if (![arg isKindOfClass:[NSDictionary class]]) {
-    return nil;
-  }
-
-  return (NSDictionary *)[args objectAtIndex:0];
 }
 
 @end

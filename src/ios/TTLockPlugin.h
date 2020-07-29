@@ -10,10 +10,18 @@
 - (void)lock_startScan:(CDVInvokedUrlCommand *)command;
 - (void)lock_stopScan:(CDVInvokedUrlCommand *)command;
 - (void)lock_init:(CDVInvokedUrlCommand *)command;
+- (void)lock_reset:(CDVInvokedUrlCommand *)command;
+- (void)lock_control:(CDVInvokedUrlCommand *)command;
 - (void)lock_setTime:(CDVInvokedUrlCommand *)command;
 - (void)lock_getTime:(CDVInvokedUrlCommand *)command;
 - (void)lock_setRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
 - (void)lock_getRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
-- (void)lock_control:(CDVInvokedUrlCommand *)command;
+
+- (void)gateway_getSSID:(CDVInvokedUrlCommand *)command;
+- (void)gateway_connect:(CDVInvokedUrlCommand *)command;
+- (void)gateway_disconnect:(CDVInvokedUrlCommand *)command;
+- (void)gateway_init:(CDVInvokedUrlCommand *)command;
+- (void)gateway_scanWiFi:(CDVInvokedUrlCommand *)command;
+- (void)gateway_upgrade:(CDVInvokedUrlCommand *)command;
 
 @end

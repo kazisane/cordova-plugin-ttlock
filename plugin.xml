@@ -10,7 +10,7 @@
   <issue>https://github.com/boomfly/cordova-plugin-ttlock/issues</issue>
 
   <js-module src="www/ttlock.js" name="ttlock">
-    <clobbers target="ttlock"/>
+    <clobbers target="TTLock"/>
   </js-module>
 
   <platform name="android">
