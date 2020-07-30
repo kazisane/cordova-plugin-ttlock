@@ -130,6 +130,9 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 
   Lock = {
     // Universal
+    isScanning: function isScanning() {
+      return exec('lock_isScanning', []);
+    },
     startScan: function startScan(resolve, reject) {
       return cordova.exec(resolve, reject, ttlockName, 'lock_startScan', []);
     },

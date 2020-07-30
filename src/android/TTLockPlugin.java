@@ -55,15 +55,17 @@ import com.ttlock.bl.sdk.constant.ControlAction;
 
 import com.ttlock.bl.sdk.gateway.api.GatewayClient;
 import com.ttlock.bl.sdk.gateway.callback.InitGatewayCallback;
+import com.ttlock.bl.sdk.gateway.callback.ScanGatewayCallback;
 import com.ttlock.bl.sdk.gateway.callback.ScanWiFiByGatewayCallback;
+import com.ttlock.bl.sdk.gateway.callback.ConnectCallback;
 import com.ttlock.bl.sdk.gateway.model.ConfigureGatewayInfo;
 import com.ttlock.bl.sdk.gateway.model.DeviceInfo;
 import com.ttlock.bl.sdk.gateway.model.GatewayError;
 import com.ttlock.bl.sdk.gateway.model.WiFi;
 
 public class TTLockPlugin extends CordovaPlugin {
-	private TTLockClient ttlockClient = TTLockClient.getDefault();
-  private GatewayClient gatewayClient = GatewayClient.getDefault();
+	private TTLockClient mTTLockClient = TTLockClient.getDefault();
+  private GatewayClient mGatewayClient = GatewayClient.getDefault();
 
 	// callbacks
 	CallbackContext discoverCallback;
@@ -117,33 +119,41 @@ public class TTLockPlugin extends CordovaPlugin {
     return true;
 	}
 
+  public void lock_isScanning(CordovaArgs args, CallbackContext callbackContext) {
+    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, mIsScanning);
+    callbackContext.sendPluginResult(pluginResult);
+  }
+
   public void lock_isBLEEnabled(CordovaArgs args, CallbackContext callbackContext) {
-    ttlockClient.isBLEEnabled(cordova.getActivity().getApplicationContext());
-		callbackContext.success();
+    boolean isBLEEnabled = mTTLockClient.isBLEEnabled(cordova.getActivity().getApplicationContext());
+    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, isBLEEnabled);
+    callbackContext.sendPluginResult(pluginResult);
   }
 
   public void lock_requestBleEnable(CordovaArgs args, CallbackContext callbackContext) {
-    ttlockClient.requestBleEnable(cordova.getActivity());
+    mTTLockClient.requestBleEnable(cordova.getActivity());
 		callbackContext.success();
   }
 
   public void lock_prepareBTService(CordovaArgs args, CallbackContext callbackContext) {
-    ttlockClient.prepareBTService(cordova.getActivity().getApplicationContext());
+    mTTLockClient.prepareBTService(cordova.getActivity().getApplicationContext());
 		callbackContext.success();
   }
 
   public void lock_stopBTService(CordovaArgs args, CallbackContext callbackContext) {
-    ttlockClient.stopBTService();
+    mTTLockClient.stopBTService();
 		callbackContext.success();
   }
 
   public void lock_startScan(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-    if (this.mIsScanning) {
+    if (mIsScanning) {
       callbackContext.error("Already scanning");
       return;
     }
 
-    ttlockClient.startScan(new ScanLockCallback() {
+    mIsScanning = true;
+
+    mTTLockClient.startScanLock(new ScanLockCallback() {
       @Override
       public void onScanLockSuccess(ExtendedBluetoothDevice device) {
         LOG.d(TAG, "ScanLockCallback device found = %s", device.getName());
@@ -158,14 +168,13 @@ public class TTLockPlugin extends CordovaPlugin {
         } catch (Exception e) {
           LOG.d(TAG, "startScanLock error = %s", e.toString());
         }
-        Gson gson = new Gson();
-        String json = gson.toJson(device);
-        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, json);
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
         pluginResult.setKeepCallback(true);
         callbackContext.sendPluginResult(pluginResult);
       }
       @Override
       public void onFail(LockError error) {
+        mIsScanning = false;
         LOG.d(TAG, "ScanLockCallback device found error = %s", error.getErrorMsg());
         callbackContext.error(error.getErrorMsg());
       }
@@ -173,18 +182,21 @@ public class TTLockPlugin extends CordovaPlugin {
   }
 
   public void lock_stopScan(CordovaArgs args, CallbackContext callbackContext) {
-    ttlockClient.stopScanLock();
+    mIsScanning = false;
+    mTTLockClient.stopScanLock();
     callbackContext.success();
   }
 
   public void lock_init(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-    Gson gson = new Gson();
-    ExtendedBluetoothDevice device = gson.fromJson(args.getString(0), ExtendedBluetoothDevice.class);
-    ExtendedBluetoothDevice _device = mDevicesCache.get(device.getAddress());
+    String lockMac = args.getString(0);
+    String lockName = args.getString(1);
+
+    ExtendedBluetoothDevice _device = mDevicesCache.get(lockMac);
+
     LOG.d(TAG, "initLock = %s", _device.toString());
-    ttlockClient.initLock(_device, new InitLockCallback() {
+    mTTLockClient.initLock(_device, new InitLockCallback() {
       @Override
-      public void onInitLockSuccess(String lockData,int specialValue) {
+      public void onInitLockSuccess(String lockData, int specialValue) {
         //init success
         JSONObject deviceObj = new JSONObject();
         try {
@@ -210,19 +222,12 @@ public class TTLockPlugin extends CordovaPlugin {
     String lockData = args.getString(0);
     String lockMac = args.getString(1);
     LOG.d(TAG, "lock_reset = %s", lockMac.toString());
-    ttlockClient.resetLock(lockData, lockMac, new ResetLockCallback() {
+    mTTLockClient.resetLock(lockData, lockMac, new ResetLockCallback() {
       @Override
-      public void onResetLockSuccess(String lockData, int specialValue) {
-        //init success
-        JSONObject deviceObj = new JSONObject();
-        try {
-          deviceObj.put("lockData", lockData);
-          deviceObj.put("specialValue", specialValue);
-        } catch (Exception e) {
-          LOG.d(TAG, "initLock error = %s", e.toString());
-        }
-        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
-        callbackContext.sendPluginResult(pluginResult);
+      public void onResetLockSuccess() {
+        // PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
+        // callbackContext.sendPluginResult(pluginResult);
+        callbackContext.success();
       }
 
       @Override
@@ -238,7 +243,7 @@ public class TTLockPlugin extends CordovaPlugin {
     int controlAction = args.getInt(0);
     String lockData = args.getString(1);
     String lockMac = args.getString(2);
-    ttlockClient.controlLock(controlAction, lockData, lockMac, new ControlLockCallback() {
+    mTTLockClient.controlLock(controlAction, lockData, lockMac, new ControlLockCallback() {
       @Override
       public void onControlLockSuccess(int lockAction, int battery, int uniqueId) {
         JSONObject deviceObj = new JSONObject();
@@ -264,12 +269,12 @@ public class TTLockPlugin extends CordovaPlugin {
   public void lock_getTime(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     String lockData = args.getString(0);
     String lockMac = args.getString(1);
-    ttlockClient.getLockTime(lockData, lockMac, new GetLockTimeCallback() {
+    mTTLockClient.getLockTime(lockData, lockMac, new GetLockTimeCallback() {
       @Override
       public void onGetLockTimeSuccess(long lockTimestamp) {
         JSONObject deviceObj = new JSONObject();
         try {
-          deviceObj.put("lockTimestamp", lockTimestamp);
+          deviceObj.put("timestamp", lockTimestamp);
         } catch (Exception e) {
           LOG.d(TAG, "getLockTime error = %s", e.toString());
         }
@@ -289,7 +294,7 @@ public class TTLockPlugin extends CordovaPlugin {
     String lockData = args.getString(0);
     String lockMac = args.getString(1);
     Boolean enabled = args.getBoolean(2);
-    ttlockClient.setRemoteUnlockSwitchState(enabled, lockData, lockMac, new SetRemoteUnlockSwitchCallback() {
+    mTTLockClient.setRemoteUnlockSwitchState(enabled, lockData, lockMac, new SetRemoteUnlockSwitchCallback() {
       @Override
       public void onSetRemoteUnlockSwitchSuccess(int specialValue) {
         JSONObject resultObj = new JSONObject();
@@ -310,12 +315,12 @@ public class TTLockPlugin extends CordovaPlugin {
     });
   }
 
-  public void lock_getRemoteUnlockSwitchState(CordovaArgs args, CallbackContext callbackContext) {
+  public void lock_getRemoteUnlockSwitchState(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     String lockData = args.getString(0);
     String lockMac = args.getString(1);
-    ttlockClient.getRemoteUnlockSwitchState(enabled, lockData, lockMac, new GetRemoteUnlockSwitchCallback() {
+    mTTLockClient.getRemoteUnlockSwitchState(lockData, lockMac, new GetRemoteUnlockStateCallback() {
       @Override
-      public void onGetRemoteUnlockSwitchSuccess(boolean enabled) {
+      public void onGetRemoteUnlockSwitchStateSuccess(boolean enabled) {
         JSONObject resultObj = new JSONObject();
         try {
           resultObj.put("enabled", enabled);
@@ -338,33 +343,35 @@ public class TTLockPlugin extends CordovaPlugin {
   * Gateway API section
   */
 
-  public void gateway_isBLEEnabled(CordovaArgs args, CallbackContext callbackContext) {
-    gatewayClient.isBLEEnabled(cordova.getActivity().getApplicationContext());
-		callbackContext.success();
-  }
+  // public void gateway_isBLEEnabled(CordovaArgs args, CallbackContext callbackContext) {
+  //   mGatewayClient.isBLEEnabled(cordova.getActivity().getApplicationContext());
+	// 	callbackContext.success();
+  // }
 
-  public void gateway_requestBleEnable(CordovaArgs args, CallbackContext callbackContext) {
-    gatewayClient.requestBleEnable(cordova.getActivity());
-		callbackContext.success();
-  }
+  // public void gateway_requestBleEnable(CordovaArgs args, CallbackContext callbackContext) {
+  //   mGatewayClient.requestBleEnable(cordova.getActivity());
+	// 	callbackContext.success();
+  // }
 
-  public void gateway_prepareBTService(CordovaArgs args, CallbackContext callbackContext) {
-    gatewayClient.prepareBTService(cordova.getActivity().getApplicationContext());
-		callbackContext.success();
-  }
+  // public void gateway_prepareBTService(CordovaArgs args, CallbackContext callbackContext) {
+  //   mGatewayClient.prepareBTService(cordova.getActivity().getApplicationContext());
+	// 	callbackContext.success();
+  // }
 
-  public void gateway_stopBTService(CordovaArgs args, CallbackContext callbackContext) {
-    gatewayClient.stopBTService();
-		callbackContext.success();
-  }
+  // public void gateway_stopBTService(CordovaArgs args, CallbackContext callbackContext) {
+  //   mGatewayClient.stopBTService();
+	// 	callbackContext.success();
+  // }
 
   public void gateway_startScan(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-    if (this.mIsScanning) {
+    if (mIsScanning) {
       callbackContext.error("Already scanning");
       return;
     }
 
-    gatewayClient.startScanGateway(new ScanGatewayCallback() {
+    mIsScanning = true;
+
+    mGatewayClient.startScanGateway(new ScanGatewayCallback() {
       @Override
       public void onScanGatewaySuccess(ExtendedBluetoothDevice device) {
         LOG.d(TAG, "ScanGatewayCallback device found = %s", device.getName());
@@ -386,22 +393,24 @@ public class TTLockPlugin extends CordovaPlugin {
         callbackContext.sendPluginResult(pluginResult);
       }
       @Override
-      public void onFail(LockError error) {
-        LOG.d(TAG, "ScanGatewayCallback device found error = %s", error.getErrorMsg());
-        callbackContext.error(error.getErrorMsg());
+      public void onScanFailed(int errorCode) {
+        mIsScanning = false;
+        LOG.d(TAG, "ScanGatewayCallback device found error = %i", errorCode);
+        callbackContext.error(errorCode);
       }
     });
   }
 
   public void gateway_stopScan(CordovaArgs args, CallbackContext callbackContext) {
-    gatewayClient.stopScanGateway();
+    mIsScanning = false;
+    mGatewayClient.stopScanGateway();
     callbackContext.success();
   }
 
   public void gateway_connect(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     String gatewayMac = args.getString(0);
     // LOG.d(TAG, "connectGateway = %s", _device.toString());
-    gatewayClient.connectGateway(gatewayMac, new ConnectCallback() {
+    mGatewayClient.connectGateway(gatewayMac, new ConnectCallback() {
       @Override
       public void onConnectSuccess(ExtendedBluetoothDevice device) {
         //init success
@@ -432,15 +441,15 @@ public class TTLockPlugin extends CordovaPlugin {
   }
 
   public void gateway_init(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-    ConfigureGatewayInfo configureGatewayInfo;
+    ConfigureGatewayInfo configureGatewayInfo = new ConfigureGatewayInfo();
     configureGatewayInfo.plugName = args.getString(0);
-    configureGatewayInfo.uid = args.getString(1);
+    configureGatewayInfo.uid = args.getInt(1);
     configureGatewayInfo.userPwd = args.getString(2);
     configureGatewayInfo.ssid = args.getString(3);
     configureGatewayInfo.wifiPwd = args.getString(4);
     
     LOG.d(TAG, "initGateway = %s", configureGatewayInfo.plugName);
-    ttlockClient.initGateway(configureGatewayInfo, new InitGatewayCallback() {
+    mGatewayClient.initGateway(configureGatewayInfo, new InitGatewayCallback() {
       @Override
       public void onInitGatewaySuccess(DeviceInfo deviceInfo) {
         //init success
@@ -457,10 +466,10 @@ public class TTLockPlugin extends CordovaPlugin {
       }
 
       @Override
-      public void onFail(LockError error) {
+      public void onFail(GatewayError error) {
         //failed
-        LOG.d(TAG, "initGateway onFail = %s", error.getErrorMsg());
-        callbackContext.error(error.getErrorMsg());
+        LOG.d(TAG, "initGateway onFail = %s", error.getDescription());
+        callbackContext.error(error.getDescription());
       }
     });
   }
@@ -468,8 +477,8 @@ public class TTLockPlugin extends CordovaPlugin {
   public void gateway_scanWiFi(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     String gatewayMac = args.getString(0);
     
-    LOG.d(TAG, "scanWiFiByGateway = %s", configureGatewayInfo.plugName);
-    ttlockClient.scanWiFiByGateway(gatewayMac, new ScanWiFiByGatewayCallback() {
+    LOG.d(TAG, "scanWiFiByGateway = %s", gatewayMac);
+    mGatewayClient.scanWiFiByGateway(gatewayMac, new ScanWiFiByGatewayCallback() {
       @Override
       public void onScanWiFiByGateway(List<WiFi> wifis) {
         JSONArray resultAr = new JSONArray();
@@ -484,6 +493,7 @@ public class TTLockPlugin extends CordovaPlugin {
           }
         }
         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultAr);
+        pluginResult.setKeepCallback(true);
         callbackContext.sendPluginResult(pluginResult);
       }
 
@@ -494,8 +504,8 @@ public class TTLockPlugin extends CordovaPlugin {
 
       @Override
       public void onFail(GatewayError error) {
-        LOG.d(TAG, "scanWiFiByGateway onFail = %s", error.getErrorMsg());
-        callbackContext.error(error.getErrorMsg());
+        LOG.d(TAG, "scanWiFiByGateway onFail = %s", error.getDescription());
+        callbackContext.error(error.getDescription());
       }
     });
   }

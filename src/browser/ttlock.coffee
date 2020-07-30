@@ -5,6 +5,7 @@ exec = (method, params) ->
 
 Lock = {
   # Universal
+  isScanning: -> exec 'lock_isScanning', []
   startScan: (resolve, reject) -> cordova.exec(resolve, reject, ttlockName, 'lock_startScan', [])
   stopScan: -> exec 'lock_stopScan', []
   init: (lockMac, lockName, lockVersion) -> exec 'lock_init', [lockMac, lockName, lockVersion]
