@@ -20,6 +20,9 @@
       scanModel.lockName, @"name",
       scanModel.lockMac, @"address",
       scanModel.lockVersion, @"version",
+      !scanModel.isInited, @"isSettingMode",
+      scanModel.electricQuantity, @"electricQuantity",
+      scanModel.RSSI, @"rssi",
     nil];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:device];
     [pluginResult setKeepCallbackAsBool:true];
