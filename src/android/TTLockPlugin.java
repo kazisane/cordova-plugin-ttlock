@@ -58,6 +58,7 @@ import com.ttlock.bl.sdk.gateway.callback.InitGatewayCallback;
 import com.ttlock.bl.sdk.gateway.callback.ScanGatewayCallback;
 import com.ttlock.bl.sdk.gateway.callback.ScanWiFiByGatewayCallback;
 import com.ttlock.bl.sdk.gateway.callback.ConnectCallback;
+import com.ttlock.bl.sdk.gateway.callback.SetLockTimeCallback;
 import com.ttlock.bl.sdk.gateway.model.ConfigureGatewayInfo;
 import com.ttlock.bl.sdk.gateway.model.DeviceInfo;
 import com.ttlock.bl.sdk.gateway.model.GatewayError;
@@ -283,6 +284,24 @@ public class TTLockPlugin extends CordovaPlugin {
         }
         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
         callbackContext.sendPluginResult(pluginResult);
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "getLockTime onFail = %s", error.getErrorMsg());
+        callbackContext.error(error.getErrorMsg());
+      }
+    });
+  }
+
+  public void lock_setTime(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String timestamp = args.getLong(0);
+    String lockData = args.getString(1);
+    String lockMac = args.getString(2);
+    mTTLockClient.setLockTime(timestamp, lockData, lockMac, new SetLockTimeCallback() {
+      @Override
+      public void onSetTimeSuccess() {
+        callbackContext.success();
       }
 
       @Override

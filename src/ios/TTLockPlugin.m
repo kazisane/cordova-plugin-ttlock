@@ -2,6 +2,12 @@
 
 @implementation TTLockPlugin
 
+- (void)lock_isScanning:(CDVInvokedUrlCommand *)command {
+  CDVPluginResult* pluginResult = nil;
+  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:TTLock.isScanning];
+  [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void)lock_setupBluetooth:(CDVInvokedUrlCommand *)command {
   TTLock.printLog = YES;
   [TTLock setupBluetooth:^(TTBluetoothState state) {
@@ -131,8 +137,8 @@
 }
 
 - (void)lock_setTime:(CDVInvokedUrlCommand *)command {
-  NSString *lockData = (NSString *)[command argumentAtIndex:0];
-  long long timestamp = (long long)[command argumentAtIndex:1];
+  long long timestamp = (long long)[command argumentAtIndex:0];
+  NSString *lockData = (NSString *)[command argumentAtIndex:1];
 
   [TTLock setLockTimeWithTimestamp:timestamp lockData:lockData
     success:^(void) {

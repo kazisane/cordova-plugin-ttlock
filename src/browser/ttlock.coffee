@@ -12,7 +12,7 @@ Lock = {
   reset: (lockData, lockMac) -> exec 'lock_reset', [lockData, lockMac]
   control: (controlAction, lockData, lockMac) -> exec 'lock_control', [controlAction, lockData, lockMac]
   getTime: (lockData, lockMac) -> exec 'lock_getTime', [lockData, lockMac]
-  setTime: (lockData, lockMac, time) -> exec 'lock_getTime', [lockData, lockMac, time]
+  setTime: (time, lockData, lockMac) -> exec 'lock_getTime', [time, lockData, lockMac]
 
   # Android
   isBLEEnabled: -> exec 'lock_isBLEEnabled', []

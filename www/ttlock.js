@@ -151,8 +151,8 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     getTime: function getTime(lockData, lockMac) {
       return exec('lock_getTime', [lockData, lockMac]);
     },
-    setTime: function setTime(lockData, lockMac, time) {
-      return exec('lock_getTime', [lockData, lockMac, time]);
+    setTime: function setTime(time, lockData, lockMac) {
+      return exec('lock_getTime', [time, lockData, lockMac]);
     },
     // Android
     isBLEEnabled: function isBLEEnabled() {
