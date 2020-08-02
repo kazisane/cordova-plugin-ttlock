@@ -14,14 +14,23 @@ Lock = {
   getTime: (lockData, lockMac) -> exec 'lock_getTime', [lockData, lockMac]
   setTime: (time, lockData, lockMac) -> exec 'lock_getTime', [time, lockData, lockMac]
 
+  addFingerprint: (startDate, endDate, lockData, lockMac, cb) ->
+    if not cb and typeof lockMac is 'function'
+      cb = lockMac
+    cordova.exec(cb, cb, ttlockName, 'lock_addFingerprint', [startDate, endDate, lockData, lockMac])
+  getAllValidFingerprints: (lockData, lockMac) -> exec 'lock_getAllValidFingerprints', [lockData, lockMac]
+  deleteFingerprint: (fingerprintNum, lockData, lockMac) -> exec 'lock_deleteFingerprint', [fingerprintNum, lockData, lockMac]
+  clearAllFingerprints: (lockData, lockMac) -> exec 'lock_clearAllFingerprints', [lockData, lockMac]
+  modifyFingerprintValidityPeriod: (startDate, endDate, fingerprintNum, lockData, lockMac) -> exec 'lock_modifyFingerprintValidityPeriod', [startDate, endDate, fingerprintNum, lockData, lockMac]
+
+  getRemoteUnlockSwitchState: (lockData, lockMac) -> exec 'lock_getRemoteUnlockSwitchState', [lockData, lockMac]
+  setRemoteUnlockSwitchState: (enabled, lockData, lockMac) -> exec 'lock_setRemoteUnlockSwitchState', [enabled, lockData, lockMac]
+
   # Android
   isBLEEnabled: -> exec 'lock_isBLEEnabled', []
   requestBleEnable: -> exec 'lock_requestBleEnable', []
   prepareBTService: -> exec 'lock_prepareBTService', []
   stopBTService: -> exec 'lock_stopBTService', []
-  
-  getRemoteUnlockSwitchState: (lockData, lockMac) -> exec 'lock_getRemoteUnlockSwitchState', [lockData, lockMac]
-  setRemoteUnlockSwitchState: (lockData, lockMac) -> exec 'lock_setRemoteUnlockSwitchState', [lockData, lockMac, enabled]
 
   # IOS
   setupBluetooth: -> exec 'lock_setupBluetooth', []

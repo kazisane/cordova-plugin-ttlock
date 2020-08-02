@@ -42,23 +42,32 @@ import java.util.*;
 import java.lang.*;
 
 import com.ttlock.bl.sdk.api.TTLockClient;
+import com.ttlock.bl.sdk.api.ExtendedBluetoothDevice;
 import com.ttlock.bl.sdk.entity.LockError;
+import com.ttlock.bl.sdk.constant.ControlAction;
+import com.ttlock.bl.sdk.constant.Feature;
+import com.ttlock.bl.sdk.util.SpecialValueUtil;
+
 import com.ttlock.bl.sdk.callback.ScanLockCallback;
 import com.ttlock.bl.sdk.callback.InitLockCallback;
 import com.ttlock.bl.sdk.callback.ResetLockCallback;
 import com.ttlock.bl.sdk.callback.ControlLockCallback;
 import com.ttlock.bl.sdk.callback.GetLockTimeCallback;
+import com.ttlock.bl.sdk.callback.SetLockTimeCallback;
 import com.ttlock.bl.sdk.callback.SetRemoteUnlockSwitchCallback;
 import com.ttlock.bl.sdk.callback.GetRemoteUnlockStateCallback;
-import com.ttlock.bl.sdk.api.ExtendedBluetoothDevice;
-import com.ttlock.bl.sdk.constant.ControlAction;
+import com.ttlock.bl.sdk.callback.AddFingerprintCallback;
+import com.ttlock.bl.sdk.callback.GetAllValidFingerprintCallback;
+import com.ttlock.bl.sdk.callback.DeleteFingerprintCallback;
+import com.ttlock.bl.sdk.callback.ClearAllFingerprintCallback;
+import com.ttlock.bl.sdk.callback.ModifyFingerprintPeriodCallback;
 
 import com.ttlock.bl.sdk.gateway.api.GatewayClient;
 import com.ttlock.bl.sdk.gateway.callback.InitGatewayCallback;
 import com.ttlock.bl.sdk.gateway.callback.ScanGatewayCallback;
 import com.ttlock.bl.sdk.gateway.callback.ScanWiFiByGatewayCallback;
 import com.ttlock.bl.sdk.gateway.callback.ConnectCallback;
-import com.ttlock.bl.sdk.gateway.callback.SetLockTimeCallback;
+
 import com.ttlock.bl.sdk.gateway.model.ConfigureGatewayInfo;
 import com.ttlock.bl.sdk.gateway.model.DeviceInfo;
 import com.ttlock.bl.sdk.gateway.model.GatewayError;
@@ -169,6 +178,7 @@ public class TTLockPlugin extends CordovaPlugin {
           deviceObj.put("isSettingMode", device.isSettingMode());
           deviceObj.put("electricQuantity", device.getBatteryCapacity());
           deviceObj.put("rssi", device.getRssi());
+          deviceObj.put("version", device.getLockVersion());
         } catch (Exception e) {
           LOG.d(TAG, "startScanLock error = %s", e.toString());
         }
@@ -180,7 +190,7 @@ public class TTLockPlugin extends CordovaPlugin {
       public void onFail(LockError error) {
         mIsScanning = false;
         LOG.d(TAG, "ScanLockCallback device found error = %s", error.getErrorMsg());
-        callbackContext.error(error.getErrorMsg());
+        callbackContext.error(makeError(error));
       }
     });
   }
@@ -206,6 +216,7 @@ public class TTLockPlugin extends CordovaPlugin {
         try {
           deviceObj.put("lockData", lockData);
           deviceObj.put("specialValue", specialValue);
+          deviceObj.put("features", getLockFeatures(specialValue));
         } catch (Exception e) {
           LOG.d(TAG, "initLock error = %s", e.toString());
         }
@@ -217,7 +228,7 @@ public class TTLockPlugin extends CordovaPlugin {
       public void onFail(LockError error) {
         //failed
         LOG.d(TAG, "initLock onFail = %s", error.getErrorMsg());
-        callbackContext.error(error.getErrorMsg());
+        callbackContext.error(makeError(error));
       }
     });
   }
@@ -238,7 +249,7 @@ public class TTLockPlugin extends CordovaPlugin {
       public void onFail(LockError error) {
         //failed
         LOG.d(TAG, "initLock onFail = %s", error.getErrorMsg());
-        callbackContext.error(error.getErrorMsg());
+        callbackContext.error(makeError(error));
       }
     });
   }
@@ -265,7 +276,7 @@ public class TTLockPlugin extends CordovaPlugin {
       @Override
       public void onFail(LockError error) {
         LOG.d(TAG, "controlLock onFail = %s", error.getErrorMsg());
-        callbackContext.error(error.getErrorMsg());
+        callbackContext.error(makeError(error));
       }
     });
   }
@@ -289,13 +300,13 @@ public class TTLockPlugin extends CordovaPlugin {
       @Override
       public void onFail(LockError error) {
         LOG.d(TAG, "getLockTime onFail = %s", error.getErrorMsg());
-        callbackContext.error(error.getErrorMsg());
+        callbackContext.error(makeError(error));
       }
     });
   }
 
   public void lock_setTime(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-    String timestamp = args.getLong(0);
+    long timestamp = args.getLong(0);
     String lockData = args.getString(1);
     String lockMac = args.getString(2);
     mTTLockClient.setLockTime(timestamp, lockData, lockMac, new SetLockTimeCallback() {
@@ -307,7 +318,7 @@ public class TTLockPlugin extends CordovaPlugin {
       @Override
       public void onFail(LockError error) {
         LOG.d(TAG, "getLockTime onFail = %s", error.getErrorMsg());
-        callbackContext.error(error.getErrorMsg());
+        callbackContext.error(makeError(error));
       }
     });
   }
@@ -332,7 +343,7 @@ public class TTLockPlugin extends CordovaPlugin {
       @Override
       public void onFail(LockError error) {
         LOG.d(TAG, "setRemoteUnlockSwitchState onFail = %s", error.getErrorMsg());
-        callbackContext.error(error.getErrorMsg());
+        callbackContext.error(makeError(error));
       }
     });
   }
@@ -356,7 +367,145 @@ public class TTLockPlugin extends CordovaPlugin {
       @Override
       public void onFail(LockError error) {
         LOG.d(TAG, "getRemoteUnlockSwitchState onFail = %s", error.getErrorMsg());
-        callbackContext.error(error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_addFingerprint(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    long startDate = args.getLong(0);
+    long endDate = args.getLong(1);
+    String lockData = args.getString(2);
+    String lockMac = args.getString(3);
+    mTTLockClient.addFingerprint(startDate, endDate, lockData, lockMac, new AddFingerprintCallback() {
+      @Override
+      public void onEnterAddMode(int totalCount) {
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("status", "add");
+          resultObj.put("totalCount", totalCount);
+        } catch (Exception e) {
+          LOG.d(TAG, "onEnterAddMode error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        pluginResult.setKeepCallback(true);
+        callbackContext.sendPluginResult(pluginResult);
+      }
+      public void onCollectFingerprint(int currentCount) {
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("status", "collected");
+          resultObj.put("currentCount", currentCount);
+        } catch (Exception e) {
+          LOG.d(TAG, "onCollectFingerprint error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        pluginResult.setKeepCallback(true);
+        callbackContext.sendPluginResult(pluginResult);
+      }
+      public void onAddFingerpintFinished(long fingerprintNumber) {
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("status", "finished");
+          resultObj.put("fingerprintNumber", String.valueOf(fingerprintNumber));
+        } catch (Exception e) {
+          LOG.d(TAG, "onAddFingerpintFinished error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        callbackContext.sendPluginResult(pluginResult);
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "addFingerprint onFail = %s", error.getErrorMsg());
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("status", "error");
+          resultObj.put("error", error.getErrorMsg());
+        } catch (Exception e) {
+          LOG.d(TAG, "addFingerprint error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        callbackContext.sendPluginResult(pluginResult);
+      }
+    });
+  }
+
+  public void lock_deleteFingerprint(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String fingerprintNumber = args.getString(0);
+    String lockData = args.getString(1);
+    String lockMac = args.getString(2);
+    mTTLockClient.deleteFingerprint(fingerprintNumber, lockData, lockMac, new DeleteFingerprintCallback() {
+      @Override
+      public void onDeleteFingerprintSuccess() {
+        callbackContext.success();
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "deleteFingerprint onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_getAllValidFingerprints(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String lockData = args.getString(0);
+    String lockMac = args.getString(1);
+    mTTLockClient.getAllValidFingerprints(lockData, lockMac, new GetAllValidFingerprintCallback() {
+      @Override
+      public void onGetAllFingerprintsSuccess(String fingerprintsJson) {
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("fingerprintsJson", fingerprintsJson);
+        } catch (Exception e) {
+          LOG.d(TAG, "onGetAllFingerprintsSuccess error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        callbackContext.sendPluginResult(pluginResult);
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "getAllValidFingerprints onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_clearAllFingerprints(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String lockData = args.getString(0);
+    String lockMac = args.getString(1);
+    mTTLockClient.clearAllFingerprints(lockData, lockMac, new ClearAllFingerprintCallback() {
+      @Override
+      public void onClearAllFingerprintSuccess() {
+        callbackContext.success();
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "deleteFingerprint onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_modifyFingerprintValidityPeriod(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    long startDate = args.getLong(0);
+    long endDate = args.getLong(1);
+    String fingerprintNumber = args.getString(2);
+    String lockData = args.getString(3);
+    String lockMac = args.getString(4);
+    mTTLockClient.modifyFingerprintValidityPeriod(startDate, endDate, fingerprintNumber, lockData, lockMac, new ModifyFingerprintPeriodCallback() {
+      @Override
+      public void onModifyPeriodSuccess() {
+        callbackContext.success();
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "deleteFingerprint onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
       }
     });
   }
@@ -364,26 +513,6 @@ public class TTLockPlugin extends CordovaPlugin {
   /*
   * Gateway API section
   */
-
-  // public void gateway_isBLEEnabled(CordovaArgs args, CallbackContext callbackContext) {
-  //   mGatewayClient.isBLEEnabled(cordova.getActivity().getApplicationContext());
-	// 	callbackContext.success();
-  // }
-
-  // public void gateway_requestBleEnable(CordovaArgs args, CallbackContext callbackContext) {
-  //   mGatewayClient.requestBleEnable(cordova.getActivity());
-	// 	callbackContext.success();
-  // }
-
-  // public void gateway_prepareBTService(CordovaArgs args, CallbackContext callbackContext) {
-  //   mGatewayClient.prepareBTService(cordova.getActivity().getApplicationContext());
-	// 	callbackContext.success();
-  // }
-
-  // public void gateway_stopBTService(CordovaArgs args, CallbackContext callbackContext) {
-  //   mGatewayClient.stopBTService();
-	// 	callbackContext.success();
-  // }
 
   public void gateway_startScan(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     if (mIsScanning) {
@@ -491,7 +620,7 @@ public class TTLockPlugin extends CordovaPlugin {
       public void onFail(GatewayError error) {
         //failed
         LOG.d(TAG, "initGateway onFail = %s", error.getDescription());
-        callbackContext.error(error.getDescription());
+        callbackContext.error(makeError(error));
       }
     });
   }
@@ -527,8 +656,57 @@ public class TTLockPlugin extends CordovaPlugin {
       @Override
       public void onFail(GatewayError error) {
         LOG.d(TAG, "scanWiFiByGateway onFail = %s", error.getDescription());
-        callbackContext.error(error.getDescription());
+        callbackContext.error(makeError(error));
       }
     });
+  }
+
+  private JSONObject getLockFeatures(int specialValue) throws JSONException {
+    JSONObject features = new JSONObject();
+    features.put("passcode", SpecialValueUtil.isSupportFeature(specialValue, Feature.PASSCODE));
+    features.put("icCard", SpecialValueUtil.isSupportFeature(specialValue, Feature.IC));
+    features.put("fingerprint", SpecialValueUtil.isSupportFeature(specialValue, Feature.FINGER_PRINT));
+    features.put("autolock", SpecialValueUtil.isSupportFeature(specialValue, Feature.AUTO_LOCK));
+    features.put("deletePasscode", SpecialValueUtil.isSupportFeature(specialValue, Feature.PASSCODE_WITH_DELETE_FUNCTION));
+    features.put("managePasscode", SpecialValueUtil.isSupportFeature(specialValue, Feature.MODIFY_PASSCODE_FUNCTION));
+    features.put("locking", SpecialValueUtil.isSupportFeature(specialValue, Feature.MANUAL_LOCK));
+    features.put("passcodeVisible", SpecialValueUtil.isSupportFeature(specialValue, Feature.PASSWORD_DISPLAY_OR_HIDE));
+    features.put("gatewayUnlock", SpecialValueUtil.isSupportFeature(specialValue, Feature.GATEWAY_UNLOCK));
+    features.put("lockFreeze", SpecialValueUtil.isSupportFeature(specialValue, Feature.FREEZE_LOCK));
+    features.put("cyclicPassword", SpecialValueUtil.isSupportFeature(specialValue, Feature.CYCLIC_PASSWORD));
+    features.put("doorSensor", SpecialValueUtil.isSupportFeature(specialValue, Feature.MAGNETOMETER));
+    features.put("remoteUnlockSwitch", SpecialValueUtil.isSupportFeature(specialValue, Feature.CONFIG_GATEWAY_UNLOCK));
+    features.put("audioSwitch", SpecialValueUtil.isSupportFeature(specialValue, Feature.AUDIO_MANAGEMENT));
+    features.put("nbIoT", SpecialValueUtil.isSupportFeature(specialValue, Feature.NB_LOCK));
+    features.put("getAdminPasscode", SpecialValueUtil.isSupportFeature(specialValue, Feature.GET_ADMIN_CODE));
+    features.put("hotelCard", SpecialValueUtil.isSupportFeature(specialValue, Feature.HOTEL_LOCK));
+    features.put("noClock", SpecialValueUtil.isSupportFeature(specialValue, Feature.LOCK_NO_CLOCK_CHIP));
+    features.put("noBroadcastInNormal", SpecialValueUtil.isSupportFeature(specialValue, Feature.CAN_NOT_CLICK_UNLOCK));
+    features.put("passageMode", SpecialValueUtil.isSupportFeature(specialValue, Feature.PASSAGE_MODE));
+    features.put("turnOffAutolock", SpecialValueUtil.isSupportFeature(specialValue, Feature.PASSAGE_MODE_AND_AUTO_LOCK_AND_CAN_CLOSE));
+    features.put("wirelessKeypad", SpecialValueUtil.isSupportFeature(specialValue, Feature.WIRELESS_KEYBOARD));
+    features.put("light", SpecialValueUtil.isSupportFeature(specialValue, Feature.LAMP));
+    return features;
+  }
+
+  // Helpers
+
+  private JSONObject makeError(LockError error) {
+    JSONObject resultObj = new JSONObject();
+    try {
+      resultObj.put("error", error.getErrorCode());
+      resultObj.put("message", error.getErrorMsg());
+    } catch (Exception e) {}
+    return resultObj;
+  }
+
+  private JSONObject makeError(GatewayError error) {
+    JSONObject resultObj = new JSONObject();
+    try {
+      resultObj.put("error", error.getDescription());
+      resultObj.put("message", error.getDescription());
+    } catch (Exception e) {}
+    
+    return resultObj;
   }
 }

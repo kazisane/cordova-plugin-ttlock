@@ -154,6 +154,31 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     setTime: function setTime(time, lockData, lockMac) {
       return exec('lock_getTime', [time, lockData, lockMac]);
     },
+    addFingerprint: function addFingerprint(startDate, endDate, lockData, lockMac, cb) {
+      if (!cb && typeof lockMac === 'function') {
+        cb = lockMac;
+      }
+
+      return cordova.exec(cb, cb, ttlockName, 'lock_addFingerprint', [startDate, endDate, lockData, lockMac]);
+    },
+    getAllValidFingerprints: function getAllValidFingerprints(lockData, lockMac) {
+      return exec('lock_getAllValidFingerprints', [lockData, lockMac]);
+    },
+    deleteFingerprint: function deleteFingerprint(fingerprintNum, lockData, lockMac) {
+      return exec('lock_deleteFingerprint', [fingerprintNum, lockData, lockMac]);
+    },
+    clearAllFingerprints: function clearAllFingerprints(lockData, lockMac) {
+      return exec('lock_clearAllFingerprints', [lockData, lockMac]);
+    },
+    modifyFingerprintValidityPeriod: function modifyFingerprintValidityPeriod(startDate, endDate, fingerprintNum, lockData, lockMac) {
+      return exec('lock_modifyFingerprintValidityPeriod', [startDate, endDate, fingerprintNum, lockData, lockMac]);
+    },
+    getRemoteUnlockSwitchState: function getRemoteUnlockSwitchState(lockData, lockMac) {
+      return exec('lock_getRemoteUnlockSwitchState', [lockData, lockMac]);
+    },
+    setRemoteUnlockSwitchState: function setRemoteUnlockSwitchState(enabled, lockData, lockMac) {
+      return exec('lock_setRemoteUnlockSwitchState', [enabled, lockData, lockMac]);
+    },
     // Android
     isBLEEnabled: function isBLEEnabled() {
       return exec('lock_isBLEEnabled', []);
@@ -166,12 +191,6 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     },
     stopBTService: function stopBTService() {
       return exec('lock_stopBTService', []);
-    },
-    getRemoteUnlockSwitchState: function getRemoteUnlockSwitchState(lockData, lockMac) {
-      return exec('lock_getRemoteUnlockSwitchState', [lockData, lockMac]);
-    },
-    setRemoteUnlockSwitchState: function setRemoteUnlockSwitchState(lockData, lockMac) {
-      return exec('lock_setRemoteUnlockSwitchState', [lockData, lockMac, enabled]);
     },
     // IOS
     setupBluetooth: function setupBluetooth() {

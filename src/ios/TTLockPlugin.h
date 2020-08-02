@@ -17,6 +17,12 @@
 - (void)lock_setRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
 - (void)lock_getRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
 
+- (void)lock_addFingerprint:(CDVInvokedUrlCommand *)command;
+- (void)lock_deleteFingerprint:(CDVInvokedUrlCommand *)command;
+- (void)lock_getAllValidFingerprints:(CDVInvokedUrlCommand *)command;
+- (void)lock_clearAllFingerprints:(CDVInvokedUrlCommand *)command;
+- (void)lock_modifyFingerprintValidityPeriod:(CDVInvokedUrlCommand *)command;
+
 - (void)gateway_getSSID:(CDVInvokedUrlCommand *)command;
 - (void)gateway_connect:(CDVInvokedUrlCommand *)command;
 - (void)gateway_disconnect:(CDVInvokedUrlCommand *)command;
