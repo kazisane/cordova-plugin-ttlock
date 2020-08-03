@@ -173,12 +173,12 @@ public class TTLockPlugin extends CordovaPlugin {
 
         JSONObject deviceObj = new JSONObject();
         try {
-          deviceObj.put("address", device.getAddress());
           deviceObj.put("name", device.getName());
+          deviceObj.put("address", device.getAddress());
+          deviceObj.put("version", device.getLockVersionJson());
           deviceObj.put("isSettingMode", device.isSettingMode());
           deviceObj.put("electricQuantity", device.getBatteryCapacity());
           deviceObj.put("rssi", device.getRssi());
-          deviceObj.put("version", device.getLockVersion());
         } catch (Exception e) {
           LOG.d(TAG, "startScanLock error = %s", e.toString());
         }

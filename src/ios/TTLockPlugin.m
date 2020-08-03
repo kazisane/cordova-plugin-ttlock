@@ -85,10 +85,10 @@
 }
 
 - (void)lock_control:(CDVInvokedUrlCommand *)command {
-  TTControlAction action = (TTControlAction)[(NSNumber *)[command argumentAtIndex:0] integerValue];
+  TTControlAction action = (TTControlAction)[NSNumber numberWithInteger:[command argumentAtIndex:0]];
   NSString *lockData = (NSString *)[command argumentAtIndex:1];
 
-  NSLog(@"lock_control %@",action);
+  NSLog(@"lock_control action %d",action);
 
   [TTLock controlLockWithControlAction:action lockData:lockData success:^(long long lockTime, NSInteger electricQuantity, long long uniqueId) {
     NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
