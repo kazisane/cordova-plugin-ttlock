@@ -13,6 +13,9 @@ Lock = {
   control: (controlAction, lockData, lockMac) -> exec 'lock_control', [controlAction, lockData, lockMac]
   getTime: (lockData, lockMac) -> exec 'lock_getTime', [lockData, lockMac]
   setTime: (time, lockData, lockMac) -> exec 'lock_getTime', [time, lockData, lockMac]
+  getRemoteUnlockSwitchState: (lockData, lockMac) -> exec 'lock_getRemoteUnlockSwitchState', [lockData, lockMac]
+  setRemoteUnlockSwitchState: (enabled, lockData, lockMac) -> exec 'lock_setRemoteUnlockSwitchState', [enabled, lockData, lockMac]
+  getOperationLog: (logType, lockData, lockMac) -> exec 'lock_getOperationLog', [logType, lockData, lockMac]
 
   addFingerprint: (startDate, endDate, lockData, lockMac, cb) ->
     if not cb and typeof lockMac is 'function'
@@ -22,9 +25,6 @@ Lock = {
   deleteFingerprint: (fingerprintNum, lockData, lockMac) -> exec 'lock_deleteFingerprint', [fingerprintNum, lockData, lockMac]
   clearAllFingerprints: (lockData, lockMac) -> exec 'lock_clearAllFingerprints', [lockData, lockMac]
   modifyFingerprintValidityPeriod: (startDate, endDate, fingerprintNum, lockData, lockMac) -> exec 'lock_modifyFingerprintValidityPeriod', [startDate, endDate, fingerprintNum, lockData, lockMac]
-
-  getRemoteUnlockSwitchState: (lockData, lockMac) -> exec 'lock_getRemoteUnlockSwitchState', [lockData, lockMac]
-  setRemoteUnlockSwitchState: (enabled, lockData, lockMac) -> exec 'lock_setRemoteUnlockSwitchState', [enabled, lockData, lockMac]
 
   # Android
   isBLEEnabled: -> exec 'lock_isBLEEnabled', []
@@ -56,10 +56,16 @@ TTLock = {
   Gateway
 }
 
-TTLock.ControlAction = {
-  Unlock: 3
-  Lock: 6
-}
+if navigator.platform == 'iPhone'
+  TTLock.ControlAction = {
+    Unlock: 1
+    Lock: 2
+  }
+else
+  TTLock.ControlAction = {
+    Unlock: 3
+    Lock: 6
+  }
 
 TTLock.BluetoothState = {
   Unknown: 0
@@ -69,5 +75,44 @@ TTLock.BluetoothState = {
   PoweredOff: 4
   PoweredOn: 5
 }
+
+if navigator.platform == 'iPhone'
+  TTLock.LogType = {
+    All: 2
+    New: 1
+  }
+else
+  TTLock.LogType = {
+    All: 11
+    New: 12
+  }
+
+TTLock.LogRecordType = {
+    MobileUnlock: 1
+    ServerUnlock: 3
+    KeyboardPasswordUnlock: 4
+    KeyboardModifyPassword: 5
+    KeyboardRemoveSinglePassword: 6
+    ErrorPasswordUnlock: 7
+    KeyboardRemoveAllPasswords: 8
+    KeyboardPasswordKicked: 9
+    UseDeleteCode: 10
+    PasscodeExpired: 11
+    SpaceInsufficient: 12
+    PasscodeInBlacklist: 13
+    DoorReboot: 14
+    AddIC: 15
+    ClearIC: 16
+    ICUnlock: 17
+    DeleteIC: 18
+    ICUnlockFailed: 25
+    BleLock: 26
+    KeyUnlock: 27
+    GatewayUnlock: 28
+    IllegalUnlock: 29
+    DoorSensorLock: 30
+    DoorSensorUnlock: 31
+    DoorGoOut: 32
+  }
 
 module.exports = TTLock

@@ -61,6 +61,7 @@ import com.ttlock.bl.sdk.callback.GetAllValidFingerprintCallback;
 import com.ttlock.bl.sdk.callback.DeleteFingerprintCallback;
 import com.ttlock.bl.sdk.callback.ClearAllFingerprintCallback;
 import com.ttlock.bl.sdk.callback.ModifyFingerprintPeriodCallback;
+import com.ttlock.bl.sdk.callback.GetOperationLogCallback;
 
 import com.ttlock.bl.sdk.gateway.api.GatewayClient;
 import com.ttlock.bl.sdk.gateway.callback.InitGatewayCallback;
@@ -367,6 +368,31 @@ public class TTLockPlugin extends CordovaPlugin {
       @Override
       public void onFail(LockError error) {
         LOG.d(TAG, "getRemoteUnlockSwitchState onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_getOperationLog(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    int logType = args.getInt(0);
+    String lockData = args.getString(1);
+    String lockMac = args.getString(2);
+    mTTLockClient.getOperationLog(logType, lockData, lockMac, new GetOperationLogCallback() {
+      @Override
+      public void onGetLogSuccess(String logs) {
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("logs", logs);
+        } catch (Exception e) {
+          LOG.d(TAG, "getOperationLog error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        callbackContext.sendPluginResult(pluginResult);
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "getOperationLog onFail = %s", error.getErrorMsg());
         callbackContext.error(makeError(error));
       }
     });

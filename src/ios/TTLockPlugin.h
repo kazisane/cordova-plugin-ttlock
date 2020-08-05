@@ -16,6 +16,7 @@
 - (void)lock_getTime:(CDVInvokedUrlCommand *)command;
 - (void)lock_setRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
 - (void)lock_getRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
+- (void)lock_getOperationLog:(CDVInvokedUrlCommand *)command;
 
 - (void)lock_addFingerprint:(CDVInvokedUrlCommand *)command;
 - (void)lock_deleteFingerprint:(CDVInvokedUrlCommand *)command;

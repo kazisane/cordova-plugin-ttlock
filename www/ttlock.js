@@ -154,6 +154,15 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     setTime: function setTime(time, lockData, lockMac) {
       return exec('lock_getTime', [time, lockData, lockMac]);
     },
+    getRemoteUnlockSwitchState: function getRemoteUnlockSwitchState(lockData, lockMac) {
+      return exec('lock_getRemoteUnlockSwitchState', [lockData, lockMac]);
+    },
+    setRemoteUnlockSwitchState: function setRemoteUnlockSwitchState(enabled, lockData, lockMac) {
+      return exec('lock_setRemoteUnlockSwitchState', [enabled, lockData, lockMac]);
+    },
+    getOperationLog: function getOperationLog(logType, lockData, lockMac) {
+      return exec('lock_getOperationLog', [logType, lockData, lockMac]);
+    },
     addFingerprint: function addFingerprint(startDate, endDate, lockData, lockMac, cb) {
       if (!cb && typeof lockMac === 'function') {
         cb = lockMac;
@@ -172,12 +181,6 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     },
     modifyFingerprintValidityPeriod: function modifyFingerprintValidityPeriod(startDate, endDate, fingerprintNum, lockData, lockMac) {
       return exec('lock_modifyFingerprintValidityPeriod', [startDate, endDate, fingerprintNum, lockData, lockMac]);
-    },
-    getRemoteUnlockSwitchState: function getRemoteUnlockSwitchState(lockData, lockMac) {
-      return exec('lock_getRemoteUnlockSwitchState', [lockData, lockMac]);
-    },
-    setRemoteUnlockSwitchState: function setRemoteUnlockSwitchState(enabled, lockData, lockMac) {
-      return exec('lock_setRemoteUnlockSwitchState', [enabled, lockData, lockMac]);
     },
     // Android
     isBLEEnabled: function isBLEEnabled() {
@@ -236,10 +239,19 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     Lock: Lock,
     Gateway: Gateway
   };
-  TTLock.ControlAction = {
-    Unlock: 3,
-    Lock: 6
-  };
+
+  if (navigator.platform === 'iPhone') {
+    TTLock.ControlAction = {
+      Unlock: 1,
+      Lock: 2
+    };
+  } else {
+    TTLock.ControlAction = {
+      Unlock: 3,
+      Lock: 6
+    };
+  }
+
   TTLock.BluetoothState = {
     Unknown: 0,
     Resetting: 1,
@@ -247,6 +259,46 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     Unauthorized: 3,
     PoweredOff: 4,
     PoweredOn: 5
+  };
+
+  if (navigator.platform === 'iPhone') {
+    TTLock.LogType = {
+      All: 2,
+      New: 1
+    };
+  } else {
+    TTLock.LogType = {
+      All: 11,
+      New: 12
+    };
+  }
+
+  TTLock.LogRecordType = {
+    MobileUnlock: 1,
+    ServerUnlock: 3,
+    KeyboardPasswordUnlock: 4,
+    KeyboardModifyPassword: 5,
+    KeyboardRemoveSinglePassword: 6,
+    ErrorPasswordUnlock: 7,
+    KeyboardRemoveAllPasswords: 8,
+    KeyboardPasswordKicked: 9,
+    UseDeleteCode: 10,
+    PasscodeExpired: 11,
+    SpaceInsufficient: 12,
+    PasscodeInBlacklist: 13,
+    DoorReboot: 14,
+    AddIC: 15,
+    ClearIC: 16,
+    ICUnlock: 17,
+    DeleteIC: 18,
+    ICUnlockFailed: 25,
+    BleLock: 26,
+    KeyUnlock: 27,
+    GatewayUnlock: 28,
+    IllegalUnlock: 29,
+    DoorSensorLock: 30,
+    DoorSensorUnlock: 31,
+    DoorGoOut: 32
   };
   module.exports = TTLock;
 }).call(this);

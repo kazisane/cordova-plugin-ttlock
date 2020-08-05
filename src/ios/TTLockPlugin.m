@@ -142,6 +142,26 @@
   ];
 }
 
+- (void)lock_getOperationLog:(CDVInvokedUrlCommand *)command {
+  TTOperateLogType logType = (TTOperateLogType)[NSNumber numberWithInteger:[command argumentAtIndex:0]];
+  NSString *lockData = (NSString *)[command argumentAtIndex:1];
+
+  [TTLock getOperationLogWithType:logType lockData:lockData
+    success:^(NSString *logs) {
+      NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
+        logs, @"logs",
+      nil];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
 - (void)lock_addFingerprint:(CDVInvokedUrlCommand *)command {
   long long startDate = (long long)[command argumentAtIndex:0];
   long long endDate = (long long)[command argumentAtIndex:1];
