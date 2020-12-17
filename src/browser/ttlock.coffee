@@ -1,12 +1,12 @@
-ttlockName = 'TTLockPlugin'
+pluginName = 'TTLockPlugin'
 
 exec = (method, params) ->
-  new Promise (resolve, reject) -> cordova.exec(resolve, reject, ttlockName, method, params)
+  new Promise (resolve, reject) -> cordova.exec(resolve, reject, pluginName, method, params)
 
 Lock = {
   # Universal
   isScanning: -> exec 'lock_isScanning', []
-  startScan: (resolve, reject) -> cordova.exec(resolve, reject, ttlockName, 'lock_startScan', [])
+  startScan: (resolve, reject) -> cordova.exec(resolve, reject, pluginName, 'lock_startScan', [])
   stopScan: -> exec 'lock_stopScan', []
   init: (lockMac, lockName, lockVersion) -> exec 'lock_init', [lockMac, lockName, lockVersion]
   reset: (lockData, lockMac) -> exec 'lock_reset', [lockData, lockMac]
@@ -20,7 +20,7 @@ Lock = {
   addFingerprint: (startDate, endDate, lockData, lockMac, cb) ->
     if not cb and typeof lockMac is 'function'
       cb = lockMac
-    cordova.exec(cb, cb, ttlockName, 'lock_addFingerprint', [startDate, endDate, lockData, lockMac])
+    cordova.exec(cb, cb, pluginName, 'lock_addFingerprint', [startDate, endDate, lockData, lockMac])
   getAllValidFingerprints: (lockData, lockMac) -> exec 'lock_getAllValidFingerprints', [lockData, lockMac]
   deleteFingerprint: (fingerprintNum, lockData, lockMac) -> exec 'lock_deleteFingerprint', [fingerprintNum, lockData, lockMac]
   clearAllFingerprints: (lockData, lockMac) -> exec 'lock_clearAllFingerprints', [lockData, lockMac]
@@ -42,12 +42,12 @@ Gateway = {
   prepareBTService: -> exec 'gateway_prepareBTService', []
   stopBTService: -> exec 'gateway_stopBTService', []
 
-  startScan: (resolve, reject) -> cordova.exec(resolve, reject, ttlockName, 'gateway_startScan', [])
+  startScan: (resolve, reject) -> cordova.exec(resolve, reject, pluginName, 'gateway_startScan', [])
   stopScan: -> exec 'gateway_stopScan', []
   connect: (gatewayMac) -> exec 'gateway_connect', [gatewayMac]
   disconnect: (gatewayMac) -> exec 'gateway_disconnect', [gatewayMac]
   init: (gatewayMac, uid, userPwd, ssid, wifiPwd) -> exec 'gateway_init', [gatewayMac, uid, userPwd, ssid, wifiPwd]
-  scanWiFi: (gatewayMac, resolve, reject) -> cordova.exec(resolve, reject, ttlockName, 'gateway_scanWiFi', [gatewayMac])
+  scanWiFi: (gatewayMac, resolve, reject) -> cordova.exec(resolve, reject, pluginName, 'gateway_scanWiFi', [gatewayMac])
   upgrade: (gatewayMac) -> exec 'gateway_upgrade', [gatewayMac]
 }
 

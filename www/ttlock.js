@@ -119,12 +119,12 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   return newRequire;
 })({"URSD":[function(require,module,exports) {
 (function () {
-  var Gateway, Lock, TTLock, exec, ttlockName;
-  ttlockName = 'TTLockPlugin';
+  var Gateway, Lock, TTLock, exec, pluginName;
+  pluginName = 'TTLockPlugin';
 
   exec = function exec(method, params) {
     return new Promise(function (resolve, reject) {
-      return cordova.exec(resolve, reject, ttlockName, method, params);
+      return cordova.exec(resolve, reject, pluginName, method, params);
     });
   };
 
@@ -134,7 +134,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
       return exec('lock_isScanning', []);
     },
     startScan: function startScan(resolve, reject) {
-      return cordova.exec(resolve, reject, ttlockName, 'lock_startScan', []);
+      return cordova.exec(resolve, reject, pluginName, 'lock_startScan', []);
     },
     stopScan: function stopScan() {
       return exec('lock_stopScan', []);
@@ -168,7 +168,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
         cb = lockMac;
       }
 
-      return cordova.exec(cb, cb, ttlockName, 'lock_addFingerprint', [startDate, endDate, lockData, lockMac]);
+      return cordova.exec(cb, cb, pluginName, 'lock_addFingerprint', [startDate, endDate, lockData, lockMac]);
     },
     getAllValidFingerprints: function getAllValidFingerprints(lockData, lockMac) {
       return exec('lock_getAllValidFingerprints', [lockData, lockMac]);
@@ -214,7 +214,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
       return exec('gateway_stopBTService', []);
     },
     startScan: function startScan(resolve, reject) {
-      return cordova.exec(resolve, reject, ttlockName, 'gateway_startScan', []);
+      return cordova.exec(resolve, reject, pluginName, 'gateway_startScan', []);
     },
     stopScan: function stopScan() {
       return exec('gateway_stopScan', []);
@@ -229,7 +229,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
       return exec('gateway_init', [gatewayMac, uid, userPwd, ssid, wifiPwd]);
     },
     scanWiFi: function scanWiFi(gatewayMac, resolve, reject) {
-      return cordova.exec(resolve, reject, ttlockName, 'gateway_scanWiFi', [gatewayMac]);
+      return cordova.exec(resolve, reject, pluginName, 'gateway_scanWiFi', [gatewayMac]);
     },
     upgrade: function upgrade(gatewayMac) {
       return exec('gateway_upgrade', [gatewayMac]);
