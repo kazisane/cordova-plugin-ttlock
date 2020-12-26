@@ -45,8 +45,10 @@ import com.ttlock.bl.sdk.api.TTLockClient;
 import com.ttlock.bl.sdk.api.ExtendedBluetoothDevice;
 import com.ttlock.bl.sdk.entity.LockError;
 import com.ttlock.bl.sdk.constant.ControlAction;
+import com.ttlock.bl.sdk.entity.ControlLockResult;
 import com.ttlock.bl.sdk.constant.Feature;
 import com.ttlock.bl.sdk.util.SpecialValueUtil;
+import com.ttlock.bl.sdk.util.FeatureValueUtil;
 
 import com.ttlock.bl.sdk.callback.ScanLockCallback;
 import com.ttlock.bl.sdk.callback.InitLockCallback;
@@ -211,13 +213,13 @@ public class TTLockPlugin extends CordovaPlugin {
     LOG.d(TAG, "initLock = %s", _device.toString());
     mTTLockClient.initLock(_device, new InitLockCallback() {
       @Override
-      public void onInitLockSuccess(String lockData, int specialValue) {
+      public void onInitLockSuccess(String lockData) {
         //init success
         JSONObject deviceObj = new JSONObject();
         try {
           deviceObj.put("lockData", lockData);
-          deviceObj.put("specialValue", specialValue);
-          deviceObj.put("features", getLockFeatures(specialValue));
+          deviceObj.put("specialValue", "");
+          deviceObj.put("features", getLockFeatures(lockData));
         } catch (Exception e) {
           LOG.d(TAG, "initLock error = %s", e.toString());
         }
@@ -261,12 +263,12 @@ public class TTLockPlugin extends CordovaPlugin {
     String lockMac = args.getString(2);
     mTTLockClient.controlLock(controlAction, lockData, lockMac, new ControlLockCallback() {
       @Override
-      public void onControlLockSuccess(int lockAction, int battery, int uniqueId) {
+      public void onControlLockSuccess(ControlLockResult controlLockResult) {
         JSONObject deviceObj = new JSONObject();
         try {
-          deviceObj.put("lockAction", lockAction);
-          deviceObj.put("battery", battery);
-          deviceObj.put("uniqueId", uniqueId);
+          deviceObj.put("lockAction", controlLockResult.controlAction);
+          deviceObj.put("battery", controlLockResult.battery);
+          deviceObj.put("uniqueId", controlLockResult.uniqueid);
         } catch (Exception e) {
           LOG.d(TAG, "controlLock error = %s", e.toString());
         }
@@ -330,10 +332,11 @@ public class TTLockPlugin extends CordovaPlugin {
     Boolean enabled = args.getBoolean(2);
     mTTLockClient.setRemoteUnlockSwitchState(enabled, lockData, lockMac, new SetRemoteUnlockSwitchCallback() {
       @Override
-      public void onSetRemoteUnlockSwitchSuccess(int specialValue) {
+      public void onSetRemoteUnlockSwitchSuccess(String lockData) {
         JSONObject resultObj = new JSONObject();
         try {
-          resultObj.put("specialValue", specialValue);
+          resultObj.put("lockData", lockData);
+          resultObj.put("specialValue", "");
         } catch (Exception e) {
           LOG.d(TAG, "setRemoteUnlockSwitchState error = %s", e.toString());
         }
@@ -687,7 +690,35 @@ public class TTLockPlugin extends CordovaPlugin {
     });
   }
 
-  private JSONObject getLockFeatures(int specialValue) throws JSONException {
+  private JSONObject getLockFeatures(String specialValue) throws JSONException {
+    JSONObject features = new JSONObject();
+    features.put("passcode", FeatureValueUtil.isSupportFeature(specialValue, Feature.PASSCODE));
+    features.put("icCard", FeatureValueUtil.isSupportFeature(specialValue, Feature.IC));
+    features.put("fingerprint", FeatureValueUtil.isSupportFeature(specialValue, Feature.FINGER_PRINT));
+    features.put("autolock", FeatureValueUtil.isSupportFeature(specialValue, Feature.AUTO_LOCK));
+    features.put("deletePasscode", FeatureValueUtil.isSupportFeature(specialValue, Feature.PASSCODE_WITH_DELETE_FUNCTION));
+    features.put("managePasscode", FeatureValueUtil.isSupportFeature(specialValue, Feature.MODIFY_PASSCODE_FUNCTION));
+    features.put("locking", FeatureValueUtil.isSupportFeature(specialValue, Feature.MANUAL_LOCK));
+    features.put("passcodeVisible", FeatureValueUtil.isSupportFeature(specialValue, Feature.PASSWORD_DISPLAY_OR_HIDE));
+    features.put("gatewayUnlock", FeatureValueUtil.isSupportFeature(specialValue, Feature.GATEWAY_UNLOCK));
+    features.put("lockFreeze", FeatureValueUtil.isSupportFeature(specialValue, Feature.FREEZE_LOCK));
+    features.put("cyclicPassword", FeatureValueUtil.isSupportFeature(specialValue, Feature.CYCLIC_PASSWORD));
+    features.put("doorSensor", FeatureValueUtil.isSupportFeature(specialValue, Feature.MAGNETOMETER));
+    features.put("remoteUnlockSwitch", FeatureValueUtil.isSupportFeature(specialValue, Feature.CONFIG_GATEWAY_UNLOCK));
+    features.put("audioSwitch", FeatureValueUtil.isSupportFeature(specialValue, Feature.AUDIO_MANAGEMENT));
+    features.put("nbIoT", FeatureValueUtil.isSupportFeature(specialValue, Feature.NB_LOCK));
+    features.put("getAdminPasscode", FeatureValueUtil.isSupportFeature(specialValue, Feature.GET_ADMIN_CODE));
+    features.put("hotelCard", FeatureValueUtil.isSupportFeature(specialValue, Feature.HOTEL_LOCK));
+    features.put("noClock", FeatureValueUtil.isSupportFeature(specialValue, Feature.LOCK_NO_CLOCK_CHIP));
+    features.put("noBroadcastInNormal", FeatureValueUtil.isSupportFeature(specialValue, Feature.CAN_NOT_CLICK_UNLOCK));
+    features.put("passageMode", FeatureValueUtil.isSupportFeature(specialValue, Feature.PASSAGE_MODE));
+    features.put("turnOffAutolock", FeatureValueUtil.isSupportFeature(specialValue, Feature.PASSAGE_MODE_AND_AUTO_LOCK_AND_CAN_CLOSE));
+    features.put("wirelessKeypad", FeatureValueUtil.isSupportFeature(specialValue, Feature.WIRELESS_KEYBOARD));
+    features.put("light", FeatureValueUtil.isSupportFeature(specialValue, Feature.LAMP));
+    return features;
+  }
+
+  private JSONObject getLockFeatures_3_0_6(int specialValue) throws JSONException {
     JSONObject features = new JSONObject();
     features.put("passcode", SpecialValueUtil.isSupportFeature(specialValue, Feature.PASSCODE));
     features.put("icCard", SpecialValueUtil.isSupportFeature(specialValue, Feature.IC));

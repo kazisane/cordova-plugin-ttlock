@@ -53,11 +53,11 @@
     lockVersion, @"lockVersion",
   nil];
 
-  [TTLock initLockWithDict:arguments success:^(NSString *lockData, long long specialValue) {
+  [TTLock initLockWithDict:arguments success:^(NSString *lockData) {
     NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
       lockData, @"lockData",
-      [NSNumber numberWithLongLong:specialValue], @"specialValue",
-      [TTLockPlugin getLockFeatures:specialValue], @"features",
+      [NSNumber numberWithLongLong:0], @"specialValue",
+      [TTLockPlugin getLockFeaturesWithLockData:lockData], @"features",
     nil];
     
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
@@ -85,7 +85,7 @@
 }
 
 - (void)lock_control:(CDVInvokedUrlCommand *)command {
-  TTControlAction action = (TTControlAction)[NSNumber numberWithInteger:[command argumentAtIndex:0]];
+  TTControlAction action = (TTControlAction)[[command.arguments objectAtIndex:0] integerValue];
   NSString *lockData = (NSString *)[command argumentAtIndex:1];
 
   NSLog(@"lock_control action %d",action);
@@ -163,38 +163,27 @@
 }
 
 - (void)lock_addFingerprint:(CDVInvokedUrlCommand *)command {
-  long long startDate = (long long)[command argumentAtIndex:0];
-  long long endDate = (long long)[command argumentAtIndex:1];
+  long long startDate = (long long)[[command.arguments objectAtIndex:0] longValue];
+  long long endDate = (long long)[[command.arguments objectAtIndex:1] longValue];
   NSString *lockData = (NSString *)[command argumentAtIndex:2];
-  __block NSInteger currentCount = 0;
-  __block NSInteger totalCount = 0;
 
   [TTLock addFingerprintStartDate:startDate endDate:endDate lockData:lockData
-    progress:^(TTAddFingerprintState state, NSInteger remanentPressTimes) {
+    progress:^(int currentCount, int totalCount) {
       NSString *status = @"unknown";
       NSDictionary *resultDict;
 
-      switch (state) {
-        case TTAddFingerprintCollectSuccess:
-          
-          break;
-        case TTAddFingerprintCanCollect:
-          status = @"can_collect";
-          totalCount = remanentPressTimes;
-          resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
-            @"add", @"status",
-            [NSNumber numberWithInteger:totalCount], @"totalCount",
-          nil];
-          
-          break;
-        case TTAddFingerprintCanCollectAgain:
-          currentCount = totalCount - remanentPressTimes;
-          resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
-            @"collected", @"status",
-            [NSNumber numberWithInteger:currentCount], @"currentCount",
-          nil];
-          break;
+      if (currentCount == 0) {
+        status = @"add";
+      } else if (currentCount > 0) {
+        status = @"collected";
       }
+
+      resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
+        status, @"status",
+        [NSNumber numberWithInteger:currentCount], @"currentCount",
+        [NSNumber numberWithInteger:totalCount], @"totalCount",
+      nil];
+
       CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
       [pluginResult setKeepCallbackAsBool:true];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -305,7 +294,11 @@
 }
 
 + (NSNumber *)hasFeature:(long long)specialValue feature:(TTLockSpecialFunction)feature {
-  return [NSNumber numberWithBool:[TTUtil lockSpecialValue:specialValue suportFunction:TTLockSpecialFunctionICCard]];
+  return [NSNumber numberWithBool:[TTUtil lockSpecialValue:specialValue suportFunction:feature]];
+}
+
++ (NSNumber *)hasFeatureValue:(NSString *)lockData feature:(TTLockFeatureValue)feature {
+  return [NSNumber numberWithBool:[TTUtil lockFeatureValue:lockData suportFunction:feature]];
 }
 
 + (NSDictionary *)getLockFeatures:(long long)specialValue {
@@ -334,6 +327,36 @@
     [TTLockPlugin hasFeature:specialValue feature:TTLockSpecialFunctionTurnOffAutoLock], @"turnOffAutolock",
     [TTLockPlugin hasFeature:specialValue feature:TTLockSpecialFunctionWirelessKeypad], @"wirelessKeypad",
     [TTLockPlugin hasFeature:specialValue feature:TTLockSpecialFunctionLight], @"light",
+  nil];
+  return features;
+}
+
++ (NSDictionary *)getLockFeaturesWithLockData:(NSString *)lockData {
+  NSDictionary *features = [NSDictionary dictionaryWithObjectsAndKeys:
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValuePasscode], @"passcode",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueICCard], @"icCard",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueFingerprint], @"fingerprint",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueWristband], @"autolock",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueAutoLock], @"deletePasscode",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueDeletePasscode], @"deletePasscode",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueManagePasscode], @"managePasscode",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueLocking], @"locking",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValuePasscodeVisible], @"passcodeVisible",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueGatewayUnlock], @"gatewayUnlock",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueLockFreeze], @"lockFreeze",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueCyclePassword], @"cyclicPassword",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueDoorSensor], @"doorSensor",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueRemoteUnlockSwicth], @"remoteUnlockSwitch",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueAudioSwitch], @"audioSwitch",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueNBIoT], @"nbIoT",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueGetAdminPasscode], @"getAdminPasscode",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueHotelCard], @"hotelCard",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueNoClock], @"noClock",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueNoBroadcastInNormal], @"noBroadcastInNormal",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValuePassageMode], @"passageMode",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueTurnOffAutoLock], @"turnOffAutolock",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueWirelessKeypad], @"wirelessKeypad",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueLight], @"light",
   nil];
   return features;
 }
