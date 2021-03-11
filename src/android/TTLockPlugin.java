@@ -545,7 +545,7 @@ public class TTLockPlugin extends CordovaPlugin {
     long endDate = args.getLong(2);
     String lockData = args.getString(3);
     String lockMac = args.getString(4);
-    mTTLockClient.createCustomPasscode(passcode,startDate, endDate, lockData, lockMac, new CreateCustomPasscodeCallback() {
+    mTTLockClient.createCustomPasscode(passCode, startDate, endDate, lockData, lockMac, new CreateCustomPasscodeCallback() {
       @Override
       public void onCreateCustomPasscodeSuccess(String passcode) {
         callbackContext.success();
@@ -566,7 +566,7 @@ public class TTLockPlugin extends CordovaPlugin {
     long endDate = args.getLong(3);
     String lockData = args.getString(4);
     String lockMac = args.getString(5);
-    mTTLockClient.modifyPasscode(passcode,startDate, endDate, lockData, lockMac, new ModifyPasscodeCallback() {
+    mTTLockClient.modifyPasscode(originalPassCode, newPassCode, startDate, endDate, lockData, lockMac, new ModifyPasscodeCallback() {
       @Override
       public void onModifyPasscodeSuccess() {
         callbackContext.success();
@@ -584,7 +584,7 @@ public class TTLockPlugin extends CordovaPlugin {
     String passCode = args.getString(0);
     String lockData = args.getString(1);
     String lockMac = args.getString(2);
-    mTTLockClient.deletePasscode(passcode, startDate, endDate, lockData, lockMac, new DeletePasscodeCallback() {
+    mTTLockClient.deletePasscode(passCode, lockData, lockMac, new DeletePasscodeCallback() {
       @Override
       public void onDeletePasscodeSuccess() {
         callbackContext.success();
