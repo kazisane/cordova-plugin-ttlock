@@ -539,6 +539,82 @@ public class TTLockPlugin extends CordovaPlugin {
     });
   }
 
+  public void lock_createCustomPasscode(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String passCode = args.getString(0);
+    long startDate = args.getLong(1);
+    long endDate = args.getLong(2);
+    String lockData = args.getString(3);
+    String lockMac = args.getString(4);
+    mTTLockClient.createCustomPasscode(passcode,startDate, endDate, lockData, lockMac, new CreateCustomPasscodeCallback() {
+      @Override
+      public void onCreateCustomPasscodeSuccess(String passcode) {
+        callbackContext.success();
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "createCustomPasscode onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_modifyPasscode(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String originalPassCode = args.getString(0);
+    String newPassCode = args.getString(1);
+    long startDate = args.getLong(2);
+    long endDate = args.getLong(3);
+    String lockData = args.getString(4);
+    String lockMac = args.getString(5);
+    mTTLockClient.modifyPasscode(passcode,startDate, endDate, lockData, lockMac, new ModifyPasscodeCallback() {
+      @Override
+      public void onModifyPasscodeSuccess() {
+        callbackContext.success();
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "onModifyPasscodeSuccess onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_deletePasscode(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String passCode = args.getString(0);
+    String lockData = args.getString(1);
+    String lockMac = args.getString(2);
+    mTTLockClient.deletePasscode(passcode, startDate, endDate, lockData, lockMac, new DeletePasscodeCallback() {
+      @Override
+      public void onDeletePasscodeSuccess() {
+        callbackContext.success();
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "onDeletePasscodeSuccess onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_resetPasscode(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String lockData = args.getString(0);
+    String lockMac = args.getString(1);
+    mTTLockClient.resetPasscode(lockData, lockMac, new ResetPasscodeCallback() {
+      @Override
+      public void onResetPasscodeSuccess(String pwdInfo, long timestamp) {
+        callbackContext.success();
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "onResetPasscodeSuccess onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
   /*
   * Gateway API section
   */

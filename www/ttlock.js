@@ -182,6 +182,18 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     modifyFingerprintValidityPeriod: function modifyFingerprintValidityPeriod(startDate, endDate, fingerprintNum, lockData, lockMac) {
       return exec('lock_modifyFingerprintValidityPeriod', [startDate, endDate, fingerprintNum, lockData, lockMac]);
     },
+    createCustomPasscode: function createCustomPasscode(passCode, startDate, endDate, lockData, lockMac) {
+      return exec('lock_createCustomPasscode', [passCode, startDate, endDate, lockData, lockMac]);
+    },
+    modifyPasscode: function modifyPasscode(originalPassCode, newPassCode, startDate, endDate, lockData, lockMac) {
+      return exec('lock_modifyPasscode', [originalPassCode, newPassCode, startDate, endDate, lockData, lockMac]);
+    },
+    deletePasscode: function deletePasscode(passCode, lockData, lockMac) {
+      return exec('lock_deletePasscode', [passCode, lockData, lockMac]);
+    },
+    resetPasscode: function resetPasscode(lockData, lockMac) {
+      return exec('lock_resetPasscode', [lockData, lockMac]);
+    },
     // Android
     isBLEEnabled: function isBLEEnabled() {
       return exec('lock_isBLEEnabled', []);
