@@ -68,6 +68,11 @@ import com.ttlock.bl.sdk.callback.CreateCustomPasscodeCallback;
 import com.ttlock.bl.sdk.callback.ModifyPasscodeCallback;
 import com.ttlock.bl.sdk.callback.DeletePasscodeCallback;
 import com.ttlock.bl.sdk.callback.ResetPasscodeCallback;
+import com.ttlock.bl.sdk.callback.AddICCardCallback;
+import com.ttlock.bl.sdk.callback.ModifyICCardPeriodCallback;
+import com.ttlock.bl.sdk.callback.GetAllValidICCardCallback;
+import com.ttlock.bl.sdk.callback.DeleteICCardCallback;
+import com.ttlock.bl.sdk.callback.ClearAllICCardCallback;
 
 import com.ttlock.bl.sdk.gateway.api.GatewayClient;
 import com.ttlock.bl.sdk.gateway.callback.InitGatewayCallback;
@@ -614,6 +619,125 @@ public class TTLockPlugin extends CordovaPlugin {
       @Override
       public void onFail(LockError error) {
         LOG.d(TAG, "onResetPasscodeSuccess onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_addICCard(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    long startDate = args.getLong(0);
+    long endDate = args.getLong(1);
+    String lockData = args.getString(2);
+    String lockMac = args.getString(3);
+    mTTLockClient.addICCard(lockData, lockMac, new AddICCardCallback() {
+      @Override
+      public void onEnterAddMode() {
+          JSONObject resultObj = new JSONObject();
+          try {
+            resultObj.put("status", "entered");
+          } catch (Exception e) {
+            LOG.d(TAG, "onEnterAddMode error = %s", e.toString());
+          }
+          PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+          pluginResult.setKeepCallback(true);
+          callbackContext.sendPluginResult(pluginResult);
+      }
+
+      @Override
+      public void onAddICCardSuccess(long cardNum) {
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("status", "collected");
+          resultObj.put("cardNum", cardNum);
+        } catch (Exception e) {
+          LOG.d(TAG, "onCollectFingerprint error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        callbackContext.sendPluginResult(pluginResult);
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_modifyICCardValidityPeriod(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    long startDate = args.getLong(0);
+    long endDate = args.getLong(1);
+    long cardNum = args.getLong(2);
+    String lockData = args.getString(3);
+    String lockMac = args.getString(4);
+    mTTLockClient.modifyICCardValidityPeriod(startDate, endDate, cardNum, lockData, lockMac, new ModifyICCardPeriodCallback() {
+      @Override
+      public void onModifyICCardPeriodSuccess() {
+        callbackContext.success();
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "modifyICCardValidityPeriod onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_getAllValidICCards(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String lockData = args.getString(0);
+    String lockMac = args.getString(1);
+    mTTLockClient.getAllValidICCards(startDate, endDate, cardNum, lockData, lockMac, new GetAllValidICCardCallback() {
+      @Override
+      public void onGetAllValidICCardSuccess(String cardDataStr) {
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("cards", cardDataStr);
+        } catch (Exception e) {
+          LOG.d(TAG, "getAllValidICCards error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        callbackContext.sendPluginResult(pluginResult);
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "modifyICCardValidityPeriod onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_deleteICCard(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    long cardNum = args.getLong(0);
+    String lockData = args.getString(1);
+    String lockMac = args.getString(2);
+    mTTLockClient.deleteICCard(cardNum, lockData, lockMac, new DeleteICCardCallback() {
+      @Override
+      public void onDeleteICCardSuccess() {
+        callbackContext.success();
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "deleteICCard onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_clearAllICCard(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    long cardNum = args.getLong(0);
+    String lockData = args.getString(1);
+    String lockMac = args.getString(2);
+    mTTLockClient.clearAllICCard(cardNum, lockData, lockMac, new ClearAllICCardCallback() {
+      @Override
+      public void onClearAllICCardSuccess() {
+        callbackContext.success();
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "clearAllICCard onFail = %s", error.getErrorMsg());
         callbackContext.error(makeError(error));
       }
     });

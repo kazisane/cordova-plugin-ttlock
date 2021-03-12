@@ -24,6 +24,17 @@
 - (void)lock_clearAllFingerprints:(CDVInvokedUrlCommand *)command;
 - (void)lock_modifyFingerprintValidityPeriod:(CDVInvokedUrlCommand *)command;
 
+- (void)lock_createCustomPasscode:(CDVInvokerUrlCommand *)command;
+- (void)lock_modifyPasscode:(CDVInvokerUrlCommand *)command;
+- (void)lock_deletePasscode:(CDVInvokerUrlCommand *)command;
+- (void)lock_resetPasscode:(CDVInvokerUrlCommand *)command;
+
+- (void)lock_addICCard:(CDVInvokerUrlCommand *)command;
+- (void)lock_modifyICCardValidityPeriod:(CDVInvokerUrlCommand *)command;
+- (void)lock_getAllValidICCards:(CDVInvokerUrlCommand *)command;
+- (void)lock_deleteICCard:(CDVInvokerUrlCommand *)command;
+- (void)lock_clearAllICCard:(CDVInvokerUrlCommand *)command;
+
 - (void)gateway_getSSID:(CDVInvokedUrlCommand *)command;
 - (void)gateway_connect:(CDVInvokedUrlCommand *)command;
 - (void)gateway_disconnect:(CDVInvokedUrlCommand *)command;

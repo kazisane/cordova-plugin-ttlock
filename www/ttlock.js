@@ -194,6 +194,21 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     resetPasscode: function resetPasscode(lockData, lockMac) {
       return exec('lock_resetPasscode', [lockData, lockMac]);
     },
+    addICCard: function addICCard(startDate, endDate, lockData, lockMac) {
+      return exec('lock_addICCard', [startDate, endDate, lockData, lockMac]);
+    },
+    modifyICCardValidityPeriod: function modifyICCardValidityPeriod(startDate, endDate, cardNum, lockData, lockMac) {
+      return exec('lock_modifyICCardValidityPeriod', [startDate, endDate, cardNum, lockData, lockMac]);
+    },
+    getAllValidICCards: function getAllValidICCards(lockData, lockMac) {
+      return exec('lock_getAllValidICCards', [lockData, lockMac]);
+    },
+    deleteICCard: function deleteICCard(cardNum, lockData, lockMac) {
+      return exec('lock_deleteICCard', [cardNum, lockData, lockMac]);
+    },
+    clearAllICCard: function clearAllICCard(lockData, lockMac) {
+      return exec('lock_clearAllICCard', [lockData, lockMac]);
+    },
     // Android
     isBLEEnabled: function isBLEEnabled() {
       return exec('lock_isBLEEnabled', []);

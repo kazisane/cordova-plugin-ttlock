@@ -283,6 +283,145 @@
   ];
 }
 
+- (void)lock_createCustomPasscode:(CDVInvokedUrlCommand *)command {
+  NSString *customPasscode = (NSString *)[command argumentAtIndex:0];
+  long long startDate = (long long)[command argumentAtIndex:1];
+  long long endDate = (long long)[command argumentAtIndex:2];
+  NSString *lockData = (NSString *)[command argumentAtIndex:3];
+
+  [TTLock createCustomPasscode:customPasscode startDate:startDate endDate:endDate lockData:lockData
+    success:^() {
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
+- (void)lock_modifyPasscode:(CDVInvokedUrlCommand *)command {
+  NSString *oldPasscode = (NSString *)[command argumentAtIndex:0];
+  NSString *newPasscode = (NSString *)[command argumentAtIndex:1];
+  long long startDate = (long long)[command argumentAtIndex:2];
+  long long endDate = (long long)[command argumentAtIndex:3];
+  NSString *lockData = (NSString *)[command argumentAtIndex:4];
+
+  [TTLock modifyPasscode:oldPasscode newPasscode:newPasscode startDate:startDate endDate:endDate lockData:lockData
+    success:^() {
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
+- (void)lock_deletePasscode:(CDVInvokedUrlCommand *)command {
+  NSString *passcode = (NSString *)[command argumentAtIndex:0];
+  NSString *lockData = (NSString *)[command argumentAtIndex:1];
+
+  [TTLock deletePasscode:passcode newPasscode:newPasscode lockData:lockData
+    success:^() {
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
+- (void)lock_resetPasscode:(CDVInvokedUrlCommand *)command {
+  NSString *lockData = (NSString *)[command argumentAtIndex:0];
+
+  [TTLock resetPasscodesWithLockData:lockData
+    success:^() {
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
+
+
+
+
+- (void)lock_addICCard:(CDVInvokedUrlCommand *)command {
+  long long startDate = (long long)[command argumentAtIndex:0];
+  long long endDate = (long long)[command argumentAtIndex:1];
+  NSString *lockData = (NSString *)[command argumentAtIndex:2];
+
+  [TTLock addICCardStartDate:startDate endDate:endDate lockData:lockData
+    progress:^(TTAddICState state) {
+
+    }
+    success:^(NSString *cardNumber) {
+      NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
+        @"finished", @"status",
+        cardNumber, @"cardNumber",
+      nil];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+
+      NSLog(@"lock_addICCard success");
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
+- (void)lock_modifyICCardValidityPeriod:(CDVInvokedUrlCommand *)command {
+  long long startDate = (long long)[command argumentAtIndex:0];
+  long long endDate = (long long)[command argumentAtIndex:1];
+  NSString *cardNumber = (NSString *)[command argumentAtIndex:2];
+  NSString *lockData = (NSString *)[command argumentAtIndex:3];
+
+  [TTLock modifyICCardValidityPeriodWithCardNumber:cardNumber startDate:startDate endDate:endDate lockData:lockData
+    success:^() {
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
+- (void)lock_deleteICCard:(CDVInvokedUrlCommand *)command {
+  NSString *cardNumber = (NSString *)[command argumentAtIndex:0];
+  NSString *lockData = (NSString *)[command argumentAtIndex:1];
+
+  [TTLock deleteICCardNumber:cardNumber lockData:lockData
+    success:^() {
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
 // Helpers
 
 + (NSDictionary *)makeError:(TTError) errorCode errorMessage:(NSString *)errorMessage {
