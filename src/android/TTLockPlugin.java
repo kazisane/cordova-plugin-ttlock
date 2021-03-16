@@ -608,20 +608,20 @@ public class TTLockPlugin extends CordovaPlugin {
   }
 
   public void lock_resetPasscode(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-    String lockData = args.getString(0);
-    String lockMac = args.getString(1);
-    mTTLockClient.resetPasscode(lockData, lockMac, new ResetPasscodeCallback() {
-      @Override
-      public void onResetPasscodeSuccess(String pwdInfo, long timestamp) {
-        callbackContext.success();
-      }
+    // String lockData = args.getString(0);
+    // String lockMac = args.getString(1);
+    // mTTLockClient.resetPasscode(lockData, lockMac, new ResetPasscodeCallback() {
+    //   @Override
+    //   public void onResetPasscodeSuccess(String pwdInfo, long timestamp) {
+    //     callbackContext.success();
+    //   }
 
-      @Override
-      public void onFail(LockError error) {
-        LOG.d(TAG, "onResetPasscodeSuccess onFail = %s", error.getErrorMsg());
-        callbackContext.error(makeError(error));
-      }
-    });
+    //   @Override
+    //   public void onFail(LockError error) {
+    //     LOG.d(TAG, "onResetPasscodeSuccess onFail = %s", error.getErrorMsg());
+    //     callbackContext.error(makeError(error));
+    //   }
+    // });
   }
 
   public void lock_addICCard(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -629,7 +629,7 @@ public class TTLockPlugin extends CordovaPlugin {
     long endDate = args.getLong(1);
     String lockData = args.getString(2);
     String lockMac = args.getString(3);
-    mTTLockClient.addICCard(lockData, lockMac, new AddICCardCallback() {
+    mTTLockClient.addICCard(startDate, endDate, lockData, lockMac, new AddICCardCallback() {
       @Override
       public void onEnterAddMode() {
           JSONObject resultObj = new JSONObject();
@@ -644,7 +644,7 @@ public class TTLockPlugin extends CordovaPlugin {
       }
 
       @Override
-      public void onAddICCardSuccess(long cardNum) {
+      public void onAddICCardSuccess(String cardNum) {
         JSONObject resultObj = new JSONObject();
         try {
           resultObj.put("status", "collected");
@@ -666,7 +666,7 @@ public class TTLockPlugin extends CordovaPlugin {
   public void lock_modifyICCardValidityPeriod(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     long startDate = args.getLong(0);
     long endDate = args.getLong(1);
-    long cardNum = args.getLong(2);
+    String cardNum = args.getString(2);
     String lockData = args.getString(3);
     String lockMac = args.getString(4);
     mTTLockClient.modifyICCardValidityPeriod(startDate, endDate, cardNum, lockData, lockMac, new ModifyICCardPeriodCallback() {
@@ -686,7 +686,7 @@ public class TTLockPlugin extends CordovaPlugin {
   public void lock_getAllValidICCards(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     String lockData = args.getString(0);
     String lockMac = args.getString(1);
-    mTTLockClient.getAllValidICCards(startDate, endDate, cardNum, lockData, lockMac, new GetAllValidICCardCallback() {
+    mTTLockClient.getAllValidICCards(startDate, endDate, lockData, lockMac, new GetAllValidICCardCallback() {
       @Override
       public void onGetAllValidICCardSuccess(String cardDataStr) {
         JSONObject resultObj = new JSONObject();
@@ -708,7 +708,7 @@ public class TTLockPlugin extends CordovaPlugin {
   }
 
   public void lock_deleteICCard(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-    long cardNum = args.getLong(0);
+    String cardNum = args.getString(0);
     String lockData = args.getString(1);
     String lockMac = args.getString(2);
     mTTLockClient.deleteICCard(cardNum, lockData, lockMac, new DeleteICCardCallback() {
@@ -726,10 +726,9 @@ public class TTLockPlugin extends CordovaPlugin {
   }
 
   public void lock_clearAllICCard(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-    long cardNum = args.getLong(0);
-    String lockData = args.getString(1);
-    String lockMac = args.getString(2);
-    mTTLockClient.clearAllICCard(cardNum, lockData, lockMac, new ClearAllICCardCallback() {
+    String lockData = args.getString(0);
+    String lockMac = args.getString(1);
+    mTTLockClient.clearAllICCard(lockData, lockMac, new ClearAllICCardCallback() {
       @Override
       public void onClearAllICCardSuccess() {
         callbackContext.success();
