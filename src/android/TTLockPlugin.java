@@ -608,20 +608,27 @@ public class TTLockPlugin extends CordovaPlugin {
   }
 
   public void lock_resetPasscode(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-    // String lockData = args.getString(0);
-    // String lockMac = args.getString(1);
-    // mTTLockClient.resetPasscode(lockData, lockMac, new ResetPasscodeCallback() {
-    //   @Override
-    //   public void onResetPasscodeSuccess(String pwdInfo, long timestamp) {
-    //     callbackContext.success();
-    //   }
+    String lockData = args.getString(0);
+    String lockMac = args.getString(1);
+    mTTLockClient.resetPasscode(lockData, lockMac, new ResetPasscodeCallback() {
+      @Override
+      public void onResetPasscodeSuccess(String lockData) {
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("lockData", lockData);
+        } catch (Exception e) {
+          LOG.d(TAG, "resetPasscode error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        callbackContext.sendPluginResult(pluginResult);
+      }
 
-    //   @Override
-    //   public void onFail(LockError error) {
-    //     LOG.d(TAG, "onResetPasscodeSuccess onFail = %s", error.getErrorMsg());
-    //     callbackContext.error(makeError(error));
-    //   }
-    // });
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "onResetPasscode onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
   }
 
   public void lock_addICCard(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -644,7 +651,7 @@ public class TTLockPlugin extends CordovaPlugin {
       }
 
       @Override
-      public void onAddICCardSuccess(String cardNum) {
+      public void onAddICCardSuccess(long cardNum) {
         JSONObject resultObj = new JSONObject();
         try {
           resultObj.put("status", "collected");
@@ -686,7 +693,7 @@ public class TTLockPlugin extends CordovaPlugin {
   public void lock_getAllValidICCards(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     String lockData = args.getString(0);
     String lockMac = args.getString(1);
-    mTTLockClient.getAllValidICCards(startDate, endDate, lockData, lockMac, new GetAllValidICCardCallback() {
+    mTTLockClient.getAllValidICCards(lockData, lockMac, new GetAllValidICCardCallback() {
       @Override
       public void onGetAllValidICCardSuccess(String cardDataStr) {
         JSONObject resultObj = new JSONObject();
