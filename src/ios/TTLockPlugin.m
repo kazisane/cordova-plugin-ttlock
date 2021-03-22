@@ -326,7 +326,7 @@
   NSString *passcode = (NSString *)[command argumentAtIndex:0];
   NSString *lockData = (NSString *)[command argumentAtIndex:1];
 
-  [TTLock deletePasscode:passcode newPasscode:newPasscode lockData:lockData
+  [TTLock deletePasscode:passcode lockData:lockData
     success:^() {
       CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -343,7 +343,7 @@
   NSString *lockData = (NSString *)[command argumentAtIndex:0];
 
   [TTLock resetPasscodesWithLockData:lockData
-    success:^() {
+    success:^(NSString *lockData) {
       CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }

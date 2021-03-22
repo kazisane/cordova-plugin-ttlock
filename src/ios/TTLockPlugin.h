@@ -14,8 +14,8 @@
 - (void)lock_control:(CDVInvokedUrlCommand *)command;
 - (void)lock_setTime:(CDVInvokedUrlCommand *)command;
 - (void)lock_getTime:(CDVInvokedUrlCommand *)command;
-- (void)lock_setRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
-- (void)lock_getRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
+// - (void)lock_setRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
+// - (void)lock_getRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
 - (void)lock_getOperationLog:(CDVInvokedUrlCommand *)command;
 
 - (void)lock_addFingerprint:(CDVInvokedUrlCommand *)command;
@@ -24,22 +24,22 @@
 - (void)lock_clearAllFingerprints:(CDVInvokedUrlCommand *)command;
 - (void)lock_modifyFingerprintValidityPeriod:(CDVInvokedUrlCommand *)command;
 
-- (void)lock_createCustomPasscode:(CDVInvokerUrlCommand *)command;
-- (void)lock_modifyPasscode:(CDVInvokerUrlCommand *)command;
-- (void)lock_deletePasscode:(CDVInvokerUrlCommand *)command;
-- (void)lock_resetPasscode:(CDVInvokerUrlCommand *)command;
+- (void)lock_createCustomPasscode:(CDVInvokedUrlCommand *)command;
+- (void)lock_modifyPasscode:(CDVInvokedUrlCommand *)command;
+- (void)lock_deletePasscode:(CDVInvokedUrlCommand *)command;
+- (void)lock_resetPasscode:(CDVInvokedUrlCommand *)command;
 
-- (void)lock_addICCard:(CDVInvokerUrlCommand *)command;
-- (void)lock_modifyICCardValidityPeriod:(CDVInvokerUrlCommand *)command;
-- (void)lock_getAllValidICCards:(CDVInvokerUrlCommand *)command;
-- (void)lock_deleteICCard:(CDVInvokerUrlCommand *)command;
-- (void)lock_clearAllICCard:(CDVInvokerUrlCommand *)command;
+- (void)lock_addICCard:(CDVInvokedUrlCommand *)command;
+- (void)lock_modifyICCardValidityPeriod:(CDVInvokedUrlCommand *)command;
+// - (void)lock_getAllValidICCards:(CDVInvokedUrlCommand *)command;
+- (void)lock_deleteICCard:(CDVInvokedUrlCommand *)command;
+// - (void)lock_clearAllICCard:(CDVInvokedUrlCommand *)command;
 
-- (void)gateway_getSSID:(CDVInvokedUrlCommand *)command;
-- (void)gateway_connect:(CDVInvokedUrlCommand *)command;
-- (void)gateway_disconnect:(CDVInvokedUrlCommand *)command;
-- (void)gateway_init:(CDVInvokedUrlCommand *)command;
-- (void)gateway_scanWiFi:(CDVInvokedUrlCommand *)command;
-- (void)gateway_upgrade:(CDVInvokedUrlCommand *)command;
+// - (void)gateway_getSSID:(CDVInvokedUrlCommand *)command;
+// - (void)gateway_connect:(CDVInvokedUrlCommand *)command;
+// - (void)gateway_disconnect:(CDVInvokedUrlCommand *)command;
+// - (void)gateway_init:(CDVInvokedUrlCommand *)command;
+// - (void)gateway_scanWiFi:(CDVInvokedUrlCommand *)command;
+// - (void)gateway_upgrade:(CDVInvokedUrlCommand *)command;
 
 @end
