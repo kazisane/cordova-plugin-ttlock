@@ -65,6 +65,7 @@ import com.ttlock.bl.sdk.callback.ClearAllFingerprintCallback;
 import com.ttlock.bl.sdk.callback.ModifyFingerprintPeriodCallback;
 import com.ttlock.bl.sdk.callback.GetOperationLogCallback;
 import com.ttlock.bl.sdk.callback.CreateCustomPasscodeCallback;
+import com.ttlock.bl.sdk.callback.GetAllValidPasscodeCallback;
 import com.ttlock.bl.sdk.callback.ModifyPasscodeCallback;
 import com.ttlock.bl.sdk.callback.DeletePasscodeCallback;
 import com.ttlock.bl.sdk.callback.ResetPasscodeCallback;
@@ -562,7 +563,31 @@ public class TTLockPlugin extends CordovaPlugin {
 
       @Override
       public void onFail(LockError error) {
-        LOG.d(TAG, "createCustomPasscode onFail = %s", error.getErrorMsg());
+        LOG.d(TAG, "onCreateCustomPasscode onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_getAllValidPasscodes(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String lockData = args.getString(0);
+    String lockMac = args.getString(1);
+    mTTLockClient.getAllValidPasscodes(lockData, lockMac, new GetAllValidPasscodeCallback() {
+      @Override
+      public void onGetAllValidPasscodeSuccess(String passcodeStr) {
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("passcodes", passcodeStr);
+        } catch (Exception e) {
+          LOG.d(TAG, "onGetAllValidPasscodeSuccess error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        callbackContext.sendPluginResult(pluginResult);
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "onGetAllValidPasscode onFail = %s", error.getErrorMsg());
         callbackContext.error(makeError(error));
       }
     });
@@ -665,7 +690,16 @@ public class TTLockPlugin extends CordovaPlugin {
 
       @Override
       public void onFail(LockError error) {
-        callbackContext.error(makeError(error));
+        LOG.d(TAG, "addICCard onFail = %s", error.getErrorMsg());
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("status", "error");
+          resultObj.put("error", error.getErrorMsg());
+        } catch (Exception e) {
+          LOG.d(TAG, "addICCard error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        callbackContext.sendPluginResult(pluginResult);
       }
     });
   }
