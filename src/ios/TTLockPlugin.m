@@ -422,6 +422,23 @@
   ];
 }
 
+- (void)lock_setAutomaticLockingPeriod:(CDVInvokedUrlCommand *)command {
+  int autoLockPeriod = (int) [command argumentAtIndex:0];
+  NSString *lockData = (NSString *)[command argumentAtIndex:1];
+
+  [TTLock setAutomaticLockingPeriod:autoLockPeriod lockData:lockData
+    success:^() {
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
 // Helpers
 
 + (NSDictionary *)makeError:(TTError) errorCode errorMessage:(NSString *)errorMessage {

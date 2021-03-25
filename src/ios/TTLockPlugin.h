@@ -35,6 +35,8 @@
 - (void)lock_deleteICCard:(CDVInvokedUrlCommand *)command;
 // - (void)lock_clearAllICCard:(CDVInvokedUrlCommand *)command;
 
+- (void)lock_setAutomaticLockingPeriod:(CDVInvokedUrlCommand *)command;
+
 // - (void)gateway_getSSID:(CDVInvokedUrlCommand *)command;
 // - (void)gateway_connect:(CDVInvokedUrlCommand *)command;
 // - (void)gateway_disconnect:(CDVInvokedUrlCommand *)command;

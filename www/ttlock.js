@@ -198,7 +198,7 @@ cordova.define("cordova-plugin-ttlock.ttlock", function(require, exports, module
       resetPasscode: function resetPasscode(lockData, lockMac) {
         return exec('lock_resetPasscode', [lockData, lockMac]);
       },
-      addICCard: function addICCard(startDate, endDate, lockData, lockMac) {
+      addICCard: function addICCard(startDate, endDate, lockData, lockMac, cb) {
         if (!cb && typeof lockMac === 'function') {
           cb = lockMac;
         }
@@ -216,6 +216,9 @@ cordova.define("cordova-plugin-ttlock.ttlock", function(require, exports, module
       },
       clearAllICCard: function clearAllICCard(lockData, lockMac) {
         return exec('lock_clearAllICCard', [lockData, lockMac]);
+      },
+      setAutomaticLockingPeriod: function setAutomaticLockingPeriod(time, lockData, lockMac) {
+        return exec('lock_setAutomaticLockingPeriod', [time, lockData, lockMac]);
       },
       // Android
       isBLEEnabled: function isBLEEnabled() {

@@ -74,6 +74,7 @@ import com.ttlock.bl.sdk.callback.ModifyICCardPeriodCallback;
 import com.ttlock.bl.sdk.callback.GetAllValidICCardCallback;
 import com.ttlock.bl.sdk.callback.DeleteICCardCallback;
 import com.ttlock.bl.sdk.callback.ClearAllICCardCallback;
+import com.ttlock.bl.sdk.callback.SetAutoLockingPeriodCallback;
 
 import com.ttlock.bl.sdk.gateway.api.GatewayClient;
 import com.ttlock.bl.sdk.gateway.callback.InitGatewayCallback;
@@ -778,6 +779,24 @@ public class TTLockPlugin extends CordovaPlugin {
       @Override
       public void onFail(LockError error) {
         LOG.d(TAG, "clearAllICCard onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_setAutomaticLockingPeriod(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    int autoLockPeriod = args.getInt(0);
+    String lockData = args.getString(1);
+    String lockMac = args.getString(2);
+    mTTLockClient.setAutomaticLockingPeriod(autoLockPeriod, lockData, lockMac, new SetAutoLockingPeriodCallback() {
+      @Override
+      public void onSetAutoLockingPeriodSuccess() {
+        callbackContext.success();
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "setAutomaticLockingPeriod onFail = %s", error.getErrorMsg());
         callbackContext.error(makeError(error));
       }
     });
