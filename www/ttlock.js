@@ -1,6 +1,6 @@
 var exec = require("cordova/exec");
 
-Lock = {
+var Lock = {
   // Universal
   isScanning: function isScanning() {
     return exec("lock_isScanning", []);
@@ -194,7 +194,7 @@ Lock = {
     return exec("lock_setupBluetooth", []);
   },
 };
-Gateway = {
+var Gateway = {
   isBLEEnabled: function isBLEEnabled() {
     return exec("gateway_isBLEEnabled", []);
   },
@@ -231,7 +231,7 @@ Gateway = {
     return exec("gateway_upgrade", [gatewayMac]);
   },
 };
-TTLock = {
+var TTLock = {
   Lock: Lock,
   Gateway: Gateway,
 };
