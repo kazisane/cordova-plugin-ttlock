@@ -1,4 +1,4 @@
-cordova.define("cordova-plugin-ttlock.TTLock", function(require, exports, module) {
+cordova.define("cordova-plugin-ttlock.ttlock", function(require, exports, module) {
 
   var exec = require('cordova/exec');
 
