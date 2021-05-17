@@ -1,4 +1,4 @@
-cordova.define("cordova-plugin-ttlock.ttlock", function(require, exports, module) {
+
   var exec = function exec(method, params) {
     return new Promise(function (resolve, reject) {
       return cordova.exec(resolve, reject, pluginName, method, params);
@@ -304,6 +304,4 @@ cordova.define("cordova-plugin-ttlock.ttlock", function(require, exports, module
   };
   
   module.exports = TTLock;
-  
-  });
   
