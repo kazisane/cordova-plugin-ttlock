@@ -426,7 +426,7 @@
   int autoLockPeriod = (int) [command argumentAtIndex:0];
   NSString *lockData = (NSString *)[command argumentAtIndex:1];
 
-  [TTLock setAutomaticLockingPeriod:autoLockPeriod lockData:lockData
+  [TTLock setAutomaticLockingPeriodicTime:autoLockPeriod lockData:lockData
     success:^() {
       CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
