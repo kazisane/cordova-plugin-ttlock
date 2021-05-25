@@ -30,7 +30,7 @@
       return exec("lock_getTime", [lockData, lockMac]);
     },
     setTime: function setTime(time, lockData, lockMac) {
-      return exec("lock_getTime", [time, lockData, lockMac]);
+      return exec("lock_setTime", [time, lockData, lockMac]);
     },
     getRemoteUnlockSwitchState: function getRemoteUnlockSwitchState(
       lockData,
