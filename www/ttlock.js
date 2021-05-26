@@ -58,6 +58,9 @@
     getOperationLog: function getOperationLog(logType, lockData, lockMac) {
       return exec("lock_getOperationLog", [logType, lockData, lockMac]);
     },
+    getBatteryLevel: function getBatteryLevel(lockData, lockMac) {
+      return exec("lock_BatteryLevel", [lockData, lockMac]);
+    },
     addFingerprint: function addFingerprint(
       startDate,
       endDate,

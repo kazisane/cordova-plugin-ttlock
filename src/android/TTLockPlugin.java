@@ -66,6 +66,7 @@ import com.ttlock.bl.sdk.callback.DeleteFingerprintCallback;
 import com.ttlock.bl.sdk.callback.ClearAllFingerprintCallback;
 import com.ttlock.bl.sdk.callback.ModifyFingerprintPeriodCallback;
 import com.ttlock.bl.sdk.callback.GetOperationLogCallback;
+import com.ttlock.bl.sdk.callback.GetBatteryLevelCallback;
 import com.ttlock.bl.sdk.callback.CreateCustomPasscodeCallback;
 import com.ttlock.bl.sdk.callback.GetAllValidPasscodeCallback;
 import com.ttlock.bl.sdk.callback.ModifyPasscodeCallback;
@@ -451,6 +452,30 @@ public class TTLockPlugin extends CordovaPlugin {
       @Override
       public void onFail(LockError error) {
         LOG.d(TAG, "getOperationLog onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_BatteryLevel(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String lockData = args.getString(0);
+    String lockMac = args.getString(1);
+    mTTLockClient.getBatteryLevel(lockData, lockMac, new GetBatteryLevelCallback() {
+      @Override
+      public void onGetBatterySuccess(int battery_level) {
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("battery_level", battery_level);
+        } catch (Exception e) {
+          LOG.d(TAG, "getBatteryLevel error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        callbackContext.sendPluginResult(pluginResult);
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "getBatteryLevel onFail = %s", error.getErrorMsg());
         callbackContext.error(makeError(error));
       }
     });
