@@ -35,6 +35,8 @@ typedef void(^TTGetLockOperateRecordSucceedBlock)(NSString *operateRecord);
 
 typedef void(^TTGetFeatureValueSucceedBlock)(NSString *lockData);
 typedef void(^TTGetLockTimeSucceedBlock)(long long lockTimestamp);
+typedef void(^TTGetMuteModeSucceedBlock)(bool audioState);
+typedef void(^TTGetBatterySucceedBlock)(int battery_level);
 typedef void(^TTGetLockVersionSucceedBlock)(NSDictionary *lockVersion);
 typedef void(^TTGetLockSystemSucceedBlock)(TTSystemInfoModel *systemModel);
 typedef void(^TTGetLockAllPasscodeSucceedBlock)(NSString *passcodes);

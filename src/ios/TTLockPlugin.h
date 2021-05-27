@@ -14,9 +14,12 @@
 - (void)lock_control:(CDVInvokedUrlCommand *)command;
 - (void)lock_setTime:(CDVInvokedUrlCommand *)command;
 - (void)lock_getTime:(CDVInvokedUrlCommand *)command;
+- (void)lock_getAudioState:(CDVInvokedUrlCommand *)command;
+- (void)lock_setAudioState:(CDVInvokedUrlCommand *)command;
 // - (void)lock_setRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
 // - (void)lock_getRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
 - (void)lock_getOperationLog:(CDVInvokedUrlCommand *)command;
+- (void)lock_BatteryLevel:(CDVInvokedUrlCommand *)command;
 
 - (void)lock_addFingerprint:(CDVInvokedUrlCommand *)command;
 - (void)lock_deleteFingerprint:(CDVInvokedUrlCommand *)command;

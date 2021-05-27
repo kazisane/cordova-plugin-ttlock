@@ -142,6 +142,61 @@
   ];
 }
 
+- (void)lock_BatteryLevel:(CDVInvokedUrlCommand *)command {
+  NSString *lockData = (NSString *)[command argumentAtIndex:0];
+
+  [TTLock getBatteryLevel:lockData
+    success:^(int battery_level) {
+      NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
+        [NSNumber numberWithInteger:battery_level], @"battery_level",
+      nil];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
+- (void)lock_getAudioState:(CDVInvokedUrlCommand *)command {
+  NSString *lockData = (NSString *)[command argumentAtIndex:0];
+
+  [TTLock getMuteModeState:lockData
+    success:^(BOOL audioState) {
+      NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
+        [NSNumber numberWithBool:audiostate], @"audioState",
+      nil];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
+- (void)lock_setAudioState:(CDVInvokedUrlCommand *)command {
+  BOOL enable = (BOOL)[command argumentAtIndex:0];
+  NSString *lockData = (NSString *)[command argumentAtIndex:1];
+
+  [TTLock setMuteMode:enable lockData:lockData
+    success:^(void) {
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
 - (void)lock_getOperationLog:(CDVInvokedUrlCommand *)command {
   TTOperateLogType logType = (TTOperateLogType)[NSNumber numberWithInteger:[command argumentAtIndex:0]];
   NSString *lockData = (NSString *)[command argumentAtIndex:1];
@@ -463,7 +518,7 @@
     [TTLockPlugin hasFeature:specialValue feature:TTLockSpecialFunctionICCard], @"icCard",
     [TTLockPlugin hasFeature:specialValue feature:TTLockSpecialFunctionFingerprint], @"fingerprint",
     [TTLockPlugin hasFeature:specialValue feature:TTLockSpecialFunctionWristband], @"autolock",
-    [TTLockPlugin hasFeature:specialValue feature:TTLockSpecialFunctionAutoLock], @"deletePasscode",
+    [TTLockPlugin hasFeature:specialValue feature:TTLockSpecialFunctionAutoLock], @"autolock",
     [TTLockPlugin hasFeature:specialValue feature:TTLockSpecialFunctionDeletePasscode], @"deletePasscode",
     [TTLockPlugin hasFeature:specialValue feature:TTLockSpecialFunctionManagePasscode], @"managePasscode",
     [TTLockPlugin hasFeature:specialValue feature:TTLockSpecialFunctionLocking], @"locking",
@@ -493,7 +548,7 @@
     [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueICCard], @"icCard",
     [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueFingerprint], @"fingerprint",
     [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueWristband], @"autolock",
-    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueAutoLock], @"deletePasscode",
+    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueAutoLock], @"autolock",
     [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueDeletePasscode], @"deletePasscode",
     [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueManagePasscode], @"managePasscode",
     [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueLocking], @"locking",
