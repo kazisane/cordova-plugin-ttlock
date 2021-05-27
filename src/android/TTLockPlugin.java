@@ -328,7 +328,7 @@ public class TTLockPlugin extends CordovaPlugin {
     String lockMac = args.getString(2);
     mTTLockClient.setMuteMode(enable, lockData, lockMac, new SetLockMuteModeCallback() {
       @Override
-      public void onSetMuteModeSuccess() {
+      public void onSetMuteModeSuccess(boolean enabled) {
         callbackContext.success();
       }
 
