@@ -101,6 +101,19 @@
                          failure:(TTFailedBlock)failure;
 
 /**
+ Set the lock audio
+
+ @param enable A timestamp（millisecond）
+ @param lockData The lock data string used to operate lock
+ @param success A block invoked when the lock time is set
+ @param failure A block invoked when the operation fails
+ */
++ (void)setMuteMode:(BOOL)enable
+                        lockData:(NSString *)lockData
+                         success:(TTSucceedBlock)success
+                         failure:(TTFailedBlock)failure;                        
+
+/**
  Get the lock time
 
  @param lockData The lock data string used to operate lock
@@ -109,6 +122,28 @@
  */
 + (void)getLockTimeWithLockData:(NSString *)lockData
                         success:(TTGetLockTimeSucceedBlock)success
+                        failure:(TTFailedBlock)failure;
+
+/**
+ Get the lock audio
+
+ @param lockData The lock data string used to operate lock
+ @param success A block invoked when the lock audio is got
+ @param failure A block invoked when the operation fails
+ */
++ (void)getMuteModeState:(NSString *)lockData
+                        success:(TTGetMuteModeSucceedBlock)success
+                        failure:(TTFailedBlock)failure;
+
+/**
+ Get the lock battery
+
+ @param lockData The lock data string used to operate lock
+ @param success A block invoked when the lock audio is got
+ @param failure A block invoked when the operation fails
+ */
++ (void)getBatteryLevel:(NSString *)lockData
+                        success:(TTGetBatterySucceedBlock)success
                         failure:(TTFailedBlock)failure;
 
 

@@ -56,6 +56,8 @@ import com.ttlock.bl.sdk.callback.ResetLockCallback;
 import com.ttlock.bl.sdk.callback.ControlLockCallback;
 import com.ttlock.bl.sdk.callback.GetLockTimeCallback;
 import com.ttlock.bl.sdk.callback.SetLockTimeCallback;
+import com.ttlock.bl.sdk.callback.GetLockMuteModeStateCallback;
+import com.ttlock.bl.sdk.callback.SetLockMuteModeCallback;
 import com.ttlock.bl.sdk.callback.SetRemoteUnlockSwitchCallback;
 import com.ttlock.bl.sdk.callback.GetRemoteUnlockStateCallback;
 import com.ttlock.bl.sdk.callback.AddFingerprintCallback;
@@ -64,6 +66,7 @@ import com.ttlock.bl.sdk.callback.DeleteFingerprintCallback;
 import com.ttlock.bl.sdk.callback.ClearAllFingerprintCallback;
 import com.ttlock.bl.sdk.callback.ModifyFingerprintPeriodCallback;
 import com.ttlock.bl.sdk.callback.GetOperationLogCallback;
+import com.ttlock.bl.sdk.callback.GetBatteryLevelCallback;
 import com.ttlock.bl.sdk.callback.CreateCustomPasscodeCallback;
 import com.ttlock.bl.sdk.callback.GetAllValidPasscodeCallback;
 import com.ttlock.bl.sdk.callback.ModifyPasscodeCallback;
@@ -295,6 +298,48 @@ public class TTLockPlugin extends CordovaPlugin {
     });
   }
 
+   public void lock_getAudioState(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String lockData = args.getString(0);
+    String lockMac = args.getString(1);
+    mTTLockClient.getMuteModeState(lockData, lockMac, new GetLockMuteModeStateCallback() {
+      @Override
+      public void onGetMuteModeSuccess(boolean audioState) {
+        JSONObject deviceObj = new JSONObject();
+        try {
+          deviceObj.put("audiostate", audioState);
+        } catch (Exception e) {
+          LOG.d(TAG, "getAudioState error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
+        callbackContext.sendPluginResult(pluginResult);
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "getAudioState onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_setAudioState(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    Boolean enable = args.getBoolean(0);
+    String lockData = args.getString(1);
+    String lockMac = args.getString(2);
+    mTTLockClient.setMuteMode(enable, lockData, lockMac, new SetLockMuteModeCallback() {
+      @Override
+      public void onSetLockMuteMode() {
+        callbackContext.success();
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "setLockMuteMode onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
   public void lock_getTime(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     String lockData = args.getString(0);
     String lockMac = args.getString(1);
@@ -331,7 +376,7 @@ public class TTLockPlugin extends CordovaPlugin {
 
       @Override
       public void onFail(LockError error) {
-        LOG.d(TAG, "getLockTime onFail = %s", error.getErrorMsg());
+        LOG.d(TAG, "setLockTime onFail = %s", error.getErrorMsg());
         callbackContext.error(makeError(error));
       }
     });
@@ -407,6 +452,30 @@ public class TTLockPlugin extends CordovaPlugin {
       @Override
       public void onFail(LockError error) {
         LOG.d(TAG, "getOperationLog onFail = %s", error.getErrorMsg());
+        callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_BatteryLevel(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String lockData = args.getString(0);
+    String lockMac = args.getString(1);
+    mTTLockClient.getBatteryLevel(lockData, lockMac, new GetBatteryLevelCallback() {
+      @Override
+      public void onGetBatterySuccess(int battery_level) {
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("battery_level", battery_level);
+        } catch (Exception e) {
+          LOG.d(TAG, "getBatteryLevel error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        callbackContext.sendPluginResult(pluginResult);
+      }
+
+      @Override
+      public void onFail(LockError error) {
+        LOG.d(TAG, "getBatteryLevel onFail = %s", error.getErrorMsg());
         callbackContext.error(makeError(error));
       }
     });

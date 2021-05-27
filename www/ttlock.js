@@ -32,6 +32,12 @@
     setTime: function setTime(time, lockData, lockMac) {
       return exec("lock_setTime", [time, lockData, lockMac]);
     },
+    getAudioState: function getAudioState(lockData, lockMac) {
+      return exec("lock_getAudioState", [lockData, lockMac]);
+    },
+    setAudioState: function setAudioState(audiostate, lockData, lockMac) {
+      return exec("lock_setAudioState", [audiostate, lockData, lockMac]);
+    },
     getRemoteUnlockSwitchState: function getRemoteUnlockSwitchState(
       lockData,
       lockMac
@@ -51,6 +57,9 @@
     },
     getOperationLog: function getOperationLog(logType, lockData, lockMac) {
       return exec("lock_getOperationLog", [logType, lockData, lockMac]);
+    },
+    getBatteryLevel: function getBatteryLevel(lockData, lockMac) {
+      return exec("lock_BatteryLevel", [lockData, lockMac]);
     },
     addFingerprint: function addFingerprint(
       startDate,
