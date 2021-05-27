@@ -303,7 +303,7 @@ public class TTLockPlugin extends CordovaPlugin {
     String lockMac = args.getString(1);
     mTTLockClient.getMuteModeState(lockData, lockMac, new GetLockMuteModeStateCallback() {
       @Override
-      public void onGetMuteModeSuccess(boolean audioState) {
+      public void onGetMuteModeStateSuccess(boolean audioState) {
         JSONObject deviceObj = new JSONObject();
         try {
           deviceObj.put("audiostate", audioState);
@@ -328,7 +328,7 @@ public class TTLockPlugin extends CordovaPlugin {
     String lockMac = args.getString(2);
     mTTLockClient.setMuteMode(enable, lockData, lockMac, new SetLockMuteModeCallback() {
       @Override
-      public void onSetLockMuteMode() {
+      public void onSetMuteModeSuccess() {
         callbackContext.success();
       }
 
@@ -462,7 +462,7 @@ public class TTLockPlugin extends CordovaPlugin {
     String lockMac = args.getString(1);
     mTTLockClient.getBatteryLevel(lockData, lockMac, new GetBatteryLevelCallback() {
       @Override
-      public void onGetBatterySuccess(int battery_level) {
+      public void onGetBatteryLevelSuccess(int battery_level) {
         JSONObject resultObj = new JSONObject();
         try {
           resultObj.put("battery_level", battery_level);
