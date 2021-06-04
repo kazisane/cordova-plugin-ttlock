@@ -167,7 +167,7 @@
   [TTLock getMuteModeState:lockData
     success:^(BOOL audioState) {
       NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
-        [NSNumber numberWithBool:audiostate], @"audioState",
+        [NSNumber numberWithBool:audioState], @"audioState",
       nil];
       CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
