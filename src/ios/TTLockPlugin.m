@@ -145,8 +145,8 @@
 - (void)lock_BatteryLevel:(CDVInvokedUrlCommand *)command {
   NSString *lockData = (NSString *)[command argumentAtIndex:0];
 
-  [TTLock getBatteryLevel:lockData
-    success:^(int battery_level) {
+  [TTLock getElectricQuantityWithLockData:lockData
+    success:^(NSInteger battery_level) {
       NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
         [NSNumber numberWithInteger:battery_level], @"battery_level",
       nil];
