@@ -126,8 +126,9 @@
 }
 
 - (void)lock_setTime:(CDVInvokedUrlCommand *)command {
-  long long timestamp = (long long)[command argumentAtIndex:0];
+  NSString *timestampStr = (NSString *)[command argumentAtIndex:0];
   NSString *lockData = (NSString *)[command argumentAtIndex:1];
+  long long timestamp = [timestampStr integerValue];
 
   [TTLock setLockTimeWithTimestamp:timestamp lockData:lockData
     success:^(void) {
