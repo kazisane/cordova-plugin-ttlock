@@ -181,6 +181,25 @@
   ];
 }
 
+- (void)lock_getRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command {
+  NSString *lockData = (NSString *)[command argumentAtIndex:0];
+
+    [TTLock getLockConfigWithType:1 lockData:lockData
+    success:^(TTLockConfigType type, BOOL remoteUnlockState) {
+      NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
+        [NSNumber numberWithBool:remoteUnlockState], @"remoteunlockstate",
+      nil];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
 - (void)lock_setAudioState:(CDVInvokedUrlCommand *)command {
   NSString *audioState = (NSString *)[command argumentAtIndex:0];
   NSString *lockData = (NSString *)[command argumentAtIndex:1];
@@ -191,6 +210,28 @@
   }
 
     [TTLock setLockConfigWithType:1 on:enableAudio lockData:lockData
+    success:^(void) {
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    failure:^(TTError errorCode, NSString *errorMsg) {
+      NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+  ];
+}
+
+- (void)lock_setRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command {
+  NSString *remoteUnlockState = (NSString *)[command argumentAtIndex:2];
+  NSString *lockData = (NSString *)[command argumentAtIndex:0];
+  int remoteUnlockStateInt = [remoteUnlockState integerValue];
+  BOOL enableRemoteUnlock = YES;
+  if (remoteUnlockStateInt == 1) {
+      enableRemoteUnlock = NO;
+  }
+
+    [TTLock setLockConfigWithType:1 on:enableRemoteUnlock lockData:lockData
     success:^(void) {
       CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];

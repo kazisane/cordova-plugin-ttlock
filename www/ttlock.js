@@ -45,14 +45,14 @@
       return exec("lock_getRemoteUnlockSwitchState", [lockData, lockMac]);
     },
     setRemoteUnlockSwitchState: function setRemoteUnlockSwitchState(
-      enabled,
       lockData,
-      lockMac
+      lockMac,
+      enabled
     ) {
       return exec("lock_setRemoteUnlockSwitchState", [
-        enabled,
         lockData,
         lockMac,
+        enabled
       ]);
     },
     getOperationLog: function getOperationLog(logType, lockData, lockMac) {

@@ -16,8 +16,8 @@
 - (void)lock_getTime:(CDVInvokedUrlCommand *)command;
 - (void)lock_getAudioState:(CDVInvokedUrlCommand *)command;
 - (void)lock_setAudioState:(CDVInvokedUrlCommand *)command;
-// - (void)lock_setRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
-// - (void)lock_getRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
+- (void)lock_setRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
+- (void)lock_getRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command;
 - (void)lock_getOperationLog:(CDVInvokedUrlCommand *)command;
 - (void)lock_BatteryLevel:(CDVInvokedUrlCommand *)command;
 

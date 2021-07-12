@@ -416,7 +416,7 @@ public class TTLockPlugin extends CordovaPlugin {
       public void onGetRemoteUnlockSwitchStateSuccess(boolean enabled) {
         JSONObject resultObj = new JSONObject();
         try {
-          resultObj.put("enabled", enabled);
+          resultObj.put("remoteunlockstate", enabled);
         } catch (Exception e) {
           LOG.d(TAG, "getRemoteUnlockSwitchState error = %s", e.toString());
         }
