@@ -41,10 +41,11 @@
 - (void)lock_setAutomaticLockingPeriod:(CDVInvokedUrlCommand *)command;
 
 // - (void)gateway_getSSID:(CDVInvokedUrlCommand *)command;
-// - (void)gateway_connect:(CDVInvokedUrlCommand *)command;
 // - (void)gateway_disconnect:(CDVInvokedUrlCommand *)command;
-// - (void)gateway_init:(CDVInvokedUrlCommand *)command;
-// - (void)gateway_scanWiFi:(CDVInvokedUrlCommand *)command;
-// - (void)gateway_upgrade:(CDVInvokedUrlCommand *)command;
-
+// - (void)gateway_upgrade: (CDVInvokedUrlCommand *)command;
+- (void) gateway_startScan:(CDVInvokedUrlCommand *)command;
+- (void) gateway_connect: (CDVInvokedUrlCommand *)command;
+- (void) gateway_stopScan: (CDVInvokedUrlCommand *)command;
+- (void) gateway_scanWiFi: (CDVInvokedUrlCommand *)command;
+- (void) gateway_init: (CDVInvokedUrlCommand *)command;
 @end

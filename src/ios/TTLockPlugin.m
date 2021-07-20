@@ -541,6 +541,102 @@
   ];
 }
 
+- (void) gateway_startScan:(CDVInvokedUrlCommand *)command {
+    [TTGateway startScanGatewayWithBlock:^(TTGatewayScanModel *model) {
+        NSDictionary* resultDevice = @{
+            @"mAddress": model.gatewayMac,
+            @"name": model.gatewayName,
+            @"rssi": [NSString stringWithFormat:@"%ld", (NSInteger)model.RSSI],
+            @"isDfuMode" : model.isDfuMode == YES ? @"1" : @"0"
+        };
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDevice];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+}
+
+- (void) gateway_connect: (CDVInvokedUrlCommand *)command {
+    NSString* gatewayMac = [command argumentAtIndex:0];
+    [TTGateway connectGatewayWithGatewayMac:gatewayMac block:^(TTGatewayConnectStatus connectStatus) {
+        if (connectStatus == TTGatewayConnectSuccess) {
+            [TTGateway stopScanGateway];
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+          }
+    }];
+}
+
+- (void) gateway_stopScan: (CDVInvokedUrlCommand *)command {
+    [TTGateway stopScanGateway];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void) gateway_scanWiFi: (CDVInvokedUrlCommand *)command {
+    [TTGateway  scanWiFiByGatewayWithBlock:^(BOOL isFinished, NSArray *WiFiArr, TTGatewayStatus status) {
+        if (status == TTGatewayNotConnect || status == TTGatewayDisconnect ) {
+            NSDictionary *errDict = [TTLockPlugin makeError:TTErrorDisconnection errorMessage:@"Gateway Diconnected, please try again"];
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:errDict];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            return;
+        }
+     
+        if (WiFiArr.count > 0) {
+            if (isFinished == YES) {
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"OK"];
+                [pluginResult setKeepCallbackAsBool:false];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            } else {
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:WiFiArr];
+                [pluginResult setKeepCallbackAsBool:true];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            }
+        }
+    }];
+}
+
+- (void) gateway_init: (CDVInvokedUrlCommand *)command {
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    dict[@"SSID"] = [command argumentAtIndex:3];
+    dict[@"wifiPwd"] = [command argumentAtIndex:4];
+    dict[@"uid"] = [command argumentAtIndex:1];
+    dict[@"userPwd"] = [command argumentAtIndex:2];
+    dict[@"gatewayName"]= [command argumentAtIndex:0];
+     
+    [TTGateway initializeGatewayWithInfoDic:dict block:^(TTSystemInfoModel *systemInfoModel, TTGatewayStatus status) {
+     
+            if (status == TTGatewayNotConnect || status == TTGatewayDisconnect) {
+                NSDictionary *errDict = [TTLockPlugin makeError:TTErrorDisconnection errorMessage:@"Gateway Diconnected, turn off and on the gateway and please try again"];
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:errDict];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                return ;
+            }
+            if (status == TTGatewaySuccess) {
+                NSDictionary* res = @{
+                    @"modelNum": systemInfoModel.modelNum,
+                    @"firmwareRevision": systemInfoModel.firmwareRevision,
+                    @"hardwareRevision": systemInfoModel.hardwareRevision
+                };
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:res];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                return;
+            }
+            if (status == TTGatewayWrongSSID) {
+     
+                NSDictionary *errDict = [TTLockPlugin makeError:TTErrorInvalidParameter errorMessage:@"Wifi Name is wrong, please check and try again"];
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:errDict];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                return;
+            }
+            if (status == TTGatewayWrongWifiPassword) {
+     
+                NSDictionary *errDict = [TTLockPlugin makeError:TTErrorInvalidParameter errorMessage:@"Wifi password is wrong, please check and try again"];
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:errDict];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                return;
+            }
+        }];
+}
+
 // Helpers
 
 + (NSDictionary *)makeError:(TTError) errorCode errorMessage:(NSString *)errorMessage {
