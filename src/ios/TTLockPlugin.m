@@ -184,10 +184,10 @@
 - (void)lock_getRemoteUnlockSwitchState:(CDVInvokedUrlCommand *)command {
   NSString *lockData = (NSString *)[command argumentAtIndex:0];
 
-    [TTLock getLockConfigWithType:1 lockData:lockData
-    success:^(TTLockConfigType type, BOOL remoteUnlockState) {
+    [TTLock getRemoteUnlockSwitchWithLockData:lockData
+    success:^(BOOL isOn) {
       NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
-        [NSNumber numberWithBool:remoteUnlockState], @"remoteunlockstate",
+        [NSNumber numberWithBool:isOn], @"remoteunlockstate",
       nil];
       CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -231,8 +231,8 @@
       enableRemoteUnlock = NO;
   }
 
-    [TTLock setLockConfigWithType:1 on:enableRemoteUnlock lockData:lockData
-    success:^(void) {
+    [TTLock setRemoteUnlockSwitchOn:enableRemoteUnlock lockData:lockData
+    success:^(NSString *lockData) {
       CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
