@@ -457,10 +457,6 @@
   ];
 }
 
-
-
-
-
 - (void)lock_addICCard:(CDVInvokedUrlCommand *)command {
   long long startDate = (long long)[command argumentAtIndex:0];
   long long endDate = (long long)[command argumentAtIndex:1];
@@ -468,12 +464,17 @@
 
   [TTLock addICCardStartDate:startDate endDate:endDate lockData:lockData
     progress:^(TTAddICState state) {
-
+      NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
+        @"entered", @"status",
+      nil];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
+      [pluginResult setKeepCallbackAsBool:true];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
     success:^(NSString *cardNumber) {
       NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
-        @"finished", @"status",
-        cardNumber, @"cardNumber",
+        @"collected", @"status",
+        cardNumber, @"cardNum",
       nil];
       CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
