@@ -1,4 +1,3 @@
-
   var exec = function exec(method, params) {
     return new Promise(function (resolve, reject) {
       return cordova.exec(resolve, reject, pluginName, method, params);
@@ -191,6 +190,21 @@
     ) {
       return exec("lock_setAutomaticLockingPeriod", [time, lockData, lockMac]);
     },
+    setPassageMode: function setPassageMode(
+    startDate,
+    endDate,
+    weekDays,
+    lockData,
+    lockMac
+    ) {
+    return exec("lock_setPassageMode", [startDate, endDate, weekDays, lockData, lockMac])
+    },
+    clearPassageMode: function clearPassageMode(
+    lockData,
+    lockMac
+    ) {
+     return exec("lock_clearPassageMode", [lockData, lockMac])
+    },
     // Android
     isBLEEnabled: function isBLEEnabled() {
       return exec("lock_isBLEEnabled", []);
@@ -313,4 +327,4 @@
   };
   
   module.exports = TTLock;
-  
+

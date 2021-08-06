@@ -43,10 +43,15 @@ import java.lang.*;
 
 import com.ttlock.bl.sdk.api.TTLockClient;
 import com.ttlock.bl.sdk.api.ExtendedBluetoothDevice;
+import com.ttlock.bl.sdk.callback.ClearPassageModeCallback;
+import com.ttlock.bl.sdk.callback.SetPassageModeCallback;
 import com.ttlock.bl.sdk.entity.LockError;
 import com.ttlock.bl.sdk.constant.ControlAction;
 import com.ttlock.bl.sdk.entity.ControlLockResult;
 import com.ttlock.bl.sdk.constant.Feature;
+import com.ttlock.bl.sdk.entity.PassageModeConfig;
+import com.ttlock.bl.sdk.entity.PassageModeType;
+import com.ttlock.bl.sdk.util.GsonUtil;
 import com.ttlock.bl.sdk.util.SpecialValueUtil;
 import com.ttlock.bl.sdk.util.FeatureValueUtil;
 
@@ -867,6 +872,51 @@ public class TTLockPlugin extends CordovaPlugin {
       public void onFail(LockError error) {
         LOG.d(TAG, "setAutomaticLockingPeriod onFail = %s", error.getErrorMsg());
         callbackContext.error(makeError(error));
+      }
+    });
+  }
+
+  public void lock_setPassageMode(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+	  //JSONObject modeData = args.getJSONObject(0);
+      Integer startDate = args.getInt(0);
+      Integer endDate = args.getInt(1);
+      JSONArray weekDays = args.getJSONArray(2);
+	  String lockData = args.getString(3);
+	  String lockMac = args.getString(4);
+    PassageModeConfig modeConfig = new PassageModeConfig();
+    LOG.d(TAG, "setPassageMode onFail = %s");
+    modeConfig.setModeType(PassageModeType.Weekly);
+    int[] mCircleWeeksArray = {1,2,3,4,5};//modeData["weekDays"];
+    modeConfig.setStartDate(startDate);//am: 8:00
+    modeConfig.setEndDate(endDate);
+    modeConfig.setRepeatWeekOrDays(String.valueOf(weekDays));
+	  mTTLockClient.setPassageMode(modeConfig, lockData, lockMac, new SetPassageModeCallback() {
+        @Override
+        public void onSetPassageModeSuccess() {
+          callbackContext.success();
+        }
+
+        @Override
+        public void onFail(LockError lockError) {
+          LOG.d(TAG, "setPassageMode onFail = %s", lockError);
+          callbackContext.error(makeError(lockError));
+        }
+      });
+  }
+
+  public void lock_clearPassageMode(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    String lockData = args.getString(0);
+    String lockMac = args.getString(1);
+    mTTLockClient.getDefault().clearPassageMode(lockData, lockMac, new ClearPassageModeCallback() {
+      @Override
+      public void onClearPassageModeSuccess() {
+        callbackContext.success();
+      }
+
+      @Override
+      public void onFail(LockError lockError) {
+        LOG.d(TAG, "clearPassageMode onFail = %s", lockError.getErrorMsg());
+        callbackContext.error(makeError(lockError));
       }
     });
   }
