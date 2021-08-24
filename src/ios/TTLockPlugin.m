@@ -387,8 +387,12 @@
 
 - (void)lock_createCustomPasscode:(CDVInvokedUrlCommand *)command {
   NSString *customPasscode = (NSString *)[command argumentAtIndex:0];
-  long long startDate = (long long)[command argumentAtIndex:1];
-  long long endDate = (long long)[command argumentAtIndex:2];
+    NSString *startTime = (NSString *)[command argumentAtIndex:1];
+    NSString *endTime = (NSString *)[command argumentAtIndex:2];
+    long startDate = [startTime integerValue];
+    long endDate = [endTime integerValue];
+//  long long startDate = (long long)[command argumentAtIndex:1];
+//  long long endDate = (long long)[command argumentAtIndex:2];
   NSString *lockData = (NSString *)[command argumentAtIndex:3];
 
   [TTLock createCustomPasscode:customPasscode startDate:startDate endDate:endDate lockData:lockData
@@ -407,8 +411,10 @@
 - (void)lock_modifyPasscode:(CDVInvokedUrlCommand *)command {
   NSString *oldPasscode = (NSString *)[command argumentAtIndex:0];
   NSString *newPasscode = (NSString *)[command argumentAtIndex:1];
-  long long startDate = (long long)[command argumentAtIndex:2];
-  long long endDate = (long long)[command argumentAtIndex:3];
+    NSString *startTime = (NSString *)[command argumentAtIndex:2];
+    NSString *endTime = (NSString *)[command argumentAtIndex:3];
+    long startDate = [startTime integerValue];
+    long endDate = [endTime integerValue];
   NSString *lockData = (NSString *)[command argumentAtIndex:4];
 
   [TTLock modifyPasscode:oldPasscode newPasscode:newPasscode startDate:startDate endDate:endDate lockData:lockData
@@ -458,8 +464,12 @@
 }
 
 - (void)lock_addICCard:(CDVInvokedUrlCommand *)command {
-  long long startDate = (long long)[command argumentAtIndex:0];
-  long long endDate = (long long)[command argumentAtIndex:1];
+    NSString *startTime = (NSString *)[command argumentAtIndex:0];
+    NSString *endTime = (NSString *)[command argumentAtIndex:1];
+    long startDate = [startTime integerValue];
+    long endDate = [endTime integerValue];
+//  long long startDate = (long long)[command argumentAtIndex:0];
+//  long long endDate = (long long)[command argumentAtIndex:1];
   NSString *lockData = (NSString *)[command argumentAtIndex:2];
 
   [TTLock addICCardStartDate:startDate endDate:endDate lockData:lockData
@@ -490,8 +500,12 @@
 }
 
 - (void)lock_modifyICCardValidityPeriod:(CDVInvokedUrlCommand *)command {
-  long long startDate = (long long)[command argumentAtIndex:0];
-  long long endDate = (long long)[command argumentAtIndex:1];
+    NSString *startTime = (NSString *)[command argumentAtIndex:0];
+    NSString *endTime = (NSString *)[command argumentAtIndex:1];
+    long startDate = [startTime integerValue];
+    long endDate = [endTime integerValue];
+ // long long startDate = (long long)[command argumentAtIndex:0];
+  //long long endDate = (long long)[command argumentAtIndex:1];
   NSString *cardNumber = (NSString *)[command argumentAtIndex:2];
   NSString *lockData = (NSString *)[command argumentAtIndex:3];
 
@@ -526,12 +540,16 @@
 }
 
 - (void)lock_setAutomaticLockingPeriod:(CDVInvokedUrlCommand *)command {
-  int autoLockPeriod = (int) [command argumentAtIndex:0];
+  NSString *autoLock = (NSString *)[command argumentAtIndex:0];
   NSString *lockData = (NSString *)[command argumentAtIndex:1];
-
+    int autoLockPeriod = [autoLock integerValue];
   [TTLock setAutomaticLockingPeriodicTime:autoLockPeriod lockData:lockData
     success:^() {
-      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+      NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
+        @"success", @"status",
+      nil];
+      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+      messageAsDictionary:resultDict];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
     failure:^(TTError errorCode, NSString *errorMsg) {
@@ -540,6 +558,40 @@
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
   ];
+}
+-(void) lock_clearPassageMode:(CDVInvokedUrlCommand *)command {
+    NSString *lockData = (NSString *)[command argumentAtIndex:0];
+    [TTLock clearPassageModeWithLockData:lockData success:^(){
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                    //[self showToastAndLog:LS(@"Success")];
+                }
+        failure:^(TTError errorCode, NSString *errorMsg) {
+        NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                    //[self showToastAndLog:errorMsg];
+                }];
+}
+
+- (void) lock_setPassageMode:(CDVInvokedUrlCommand *)command {
+    NSString *startTime = (NSString *)[command argumentAtIndex:0];
+    NSString *endTime = (NSString *)[command argumentAtIndex:1];
+    int startDate = [startTime integerValue];
+    int endDate = [endTime integerValue];
+    NSString *lockData = (NSString *)[command argumentAtIndex:3];
+    NSArray *weekly = (NSArray *)[command argumentAtIndex:2];
+    [TTLock configPassageModeWithType:TTPassageModeTypeWeekly weekly:weekly monthly:nil startDate:startDate endDate:endDate lockData:lockData success:^(){
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                  // [self showToastAndLog:LS(@"Success")];
+               }
+        failure:^(TTError errorCode, NSString *errorMsg) {
+        NSDictionary *resultDict = [TTLockPlugin makeError:errorCode errorMessage:errorMsg];
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:resultDict];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                  // [self showToastAndLog:errorMsg];
+               }];
 }
 
 - (void) gateway_startScan:(CDVInvokedUrlCommand *)command {
