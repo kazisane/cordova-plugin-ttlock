@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="cordova-plugin-ttlock" version="0.0.1">
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="cordova-plugin-ttlock" version="0.0.2">
 
   <name>TTLock</name>
   <description>TTLock SDK Plugin</description>
@@ -10,11 +10,13 @@
   <issue>https://github.com/boomfly/cordova-plugin-ttlock/issues</issue>
 
   <js-module src="www/ttlock.js" name="ttlock">
-    <clobbers target="ttlock"/>
+    <clobbers target="TTLock"/>
   </js-module>
 
   <platform name="android">
-    <framework src="com.tongtonglock:ttlock:3.0.6" />
+    <framework src="com.tongtonglock:ttlock:3.1.4" />
+    <framework src="com.google.code.gson:gson:2.8.5" />
+    <!-- <lib-file src="src/android/libs/gson-2.8.6.jar" /> -->
 
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="TTLockPlugin">
@@ -30,6 +32,21 @@
       <uses-permission android:name="android.permission.INTERNET" />
       <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     </config-file>
+  </platform>
+
+  <platform name="ios">
+    <config-file target="config.xml" parent="/*">
+      <feature name="TTLockPlugin">
+        <param name="ios-package" value="TTLockPlugin" />
+      </feature>
+    </config-file>
+
+    <header-file src="src/ios/TTLockPlugin.h" />
+    <source-file src="src/ios/TTLockPlugin.m" />
+
+    <framework src="src/ios/TTLock.framework" custom="true" />
+    <framework src="src/ios/TTLockGateway.framework" custom="true" />
+    <framework src="CoreBluetooth.framework" />
   </platform>
 
   <platform name="browser">
