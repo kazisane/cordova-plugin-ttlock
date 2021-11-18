@@ -761,8 +761,6 @@
     [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueNoClock], @"noClock",
     [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueNoBroadcastInNormal], @"noBroadcastInNormal",
     [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValuePassageMode], @"passageMode",
-    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueTurnOffAutoLock], @"turnOffAutolock",
-    [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueWirelessKeypad], @"wirelessKeypad",
     [TTLockPlugin hasFeatureValue:lockData feature:TTLockFeatureValueLight], @"light",
   nil];
   return features;
