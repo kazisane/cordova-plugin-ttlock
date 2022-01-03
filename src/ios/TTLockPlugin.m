@@ -233,7 +233,10 @@
 
     [TTLock setRemoteUnlockSwitchOn:enableRemoteUnlock lockData:lockData
     success:^(NSString *lockData) {
-      CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+       NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
+        lockData, @"lockData",
+        nil];
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultDict];
       [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
     failure:^(TTError errorCode, NSString *errorMsg) {
