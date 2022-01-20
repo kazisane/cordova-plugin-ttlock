@@ -12,6 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// (c) 2014-2016 Don Coleman
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.apartx.ttlock;
 
 import android.Manifest;
@@ -98,6 +112,7 @@ import com.ttlock.bl.sdk.gateway.model.WiFi;
 public class TTLockPlugin extends CordovaPlugin {
 	private TTLockClient mTTLockClient = TTLockClient.getDefault();
   private GatewayClient mGatewayClient = GatewayClient.getDefault();
+  protected Context context;
 
 	// callbacks
 	CallbackContext discoverCallback;
@@ -128,6 +143,9 @@ public class TTLockPlugin extends CordovaPlugin {
     java.lang.reflect.Method method;
 
     try {
+      // if(action=="createNotificationChannel"){
+      //   createNotificationChannel(args,callbackContext);
+      // }
       // method = this.getClass().getMethod(action);
       method = TTLockPlugin.class.getMethod(action, CordovaArgs.class, CallbackContext.class);
     } catch (java.lang.SecurityException e) {
@@ -154,6 +172,14 @@ public class TTLockPlugin extends CordovaPlugin {
   public void lock_isScanning(CordovaArgs args, CallbackContext callbackContext) {
     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, mIsScanning);
     callbackContext.sendPluginResult(pluginResult);
+  }
+
+  public void createNotificationChannel(CordovaArgs args, CallbackContext callbackContext) {
+    cordova.getActivity().runOnUiThread(new Runnable() {
+      public void run() {
+        new ChannelCreator(getContext()).createNotificationChannel(callbackContext, args);
+      }
+    });
   }
 
   public void lock_isBLEEnabled(CordovaArgs args, CallbackContext callbackContext) {
@@ -1148,4 +1174,14 @@ public class TTLockPlugin extends CordovaPlugin {
     
     return resultObj;
   }
+
+  protected Context getContext() {
+    context = cordova != null ? cordova.getActivity().getBaseContext() : context;
+    if (context == null) {
+      throw new RuntimeException("The Android Context is required. Verify if the 'activity' or 'context' are passed by constructor");
+    }
+
+    return context;
+  }
 }
+

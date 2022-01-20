@@ -10,6 +10,9 @@
     isScanning: function isScanning() {
       return exec("lock_isScanning", []);
     },
+    createNotificationChannel: function createNotificationChannel(channelConfig) {
+      return exec("createNotificationChannel", [channelConfig]);
+    },
     startScan: function startScan(resolve, reject) {
       return cordova.exec(resolve, reject, pluginName, "lock_startScan", []);
     },
