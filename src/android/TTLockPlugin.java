@@ -109,6 +109,8 @@ import com.ttlock.bl.sdk.gateway.model.DeviceInfo;
 import com.ttlock.bl.sdk.gateway.model.GatewayError;
 import com.ttlock.bl.sdk.gateway.model.WiFi;
 
+import com.apartx.ttlock.ChannelCreator;
+
 public class TTLockPlugin extends CordovaPlugin {
 	private TTLockClient mTTLockClient = TTLockClient.getDefault();
   private GatewayClient mGatewayClient = GatewayClient.getDefault();
