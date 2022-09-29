@@ -971,13 +971,14 @@ public class TTLockPlugin extends CordovaPlugin {
 
         JSONObject deviceObj = new JSONObject();
         try {
-          deviceObj.put("address", device.getAddress());
+          deviceObj.put("mAddress", device.getAddress());
           deviceObj.put("name", device.getName());
         } catch (Exception e) {
           LOG.d(TAG, "startScanGateway error = %s", e.toString());
         }
-        Gson gson = new Gson();
-        String json = gson.toJson(device);
+        // Gson gson = new Gson();
+        // String json = gson.toJson(device);
+        String json = String.valueOf(deviceObj);
         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, json);
         pluginResult.setKeepCallback(true);
         callbackContext.sendPluginResult(pluginResult);
