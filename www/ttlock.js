@@ -28,6 +28,9 @@
     control: function control(controlAction, lockData, lockMac) {
       return exec("lock_control", [controlAction, lockData, lockMac]);
     },
+    lockUpdateCheck: function lockUpdateCheck(resolve, reject, lockData,lockMac,lockId,clientId,access_token) {
+      return cordova.exec(resolve, reject, pluginName, "lock_updateCheck", [lockData, lockMac,lockId,clientId,access_token]);
+    },
     getTime: function getTime(lockData, lockMac) {
       return exec("lock_getTime", [lockData, lockMac]);
     },

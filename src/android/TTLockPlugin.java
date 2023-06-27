@@ -31,6 +31,7 @@ package com.apartx.ttlock;
 import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import androidx.core.content.ContextCompat;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -57,6 +58,7 @@ import java.lang.*;
 
 import com.ttlock.bl.sdk.api.TTLockClient;
 import com.ttlock.bl.sdk.api.ExtendedBluetoothDevice;
+import com.ttlock.bl.sdk.api.LockDfuClient;
 import com.ttlock.bl.sdk.callback.ClearPassageModeCallback;
 import com.ttlock.bl.sdk.callback.SetPassageModeCallback;
 import com.ttlock.bl.sdk.entity.LockError;
@@ -69,6 +71,7 @@ import com.ttlock.bl.sdk.util.GsonUtil;
 import com.ttlock.bl.sdk.util.SpecialValueUtil;
 import com.ttlock.bl.sdk.util.FeatureValueUtil;
 
+import com.ttlock.bl.sdk.callback.DfuCallback;
 import com.ttlock.bl.sdk.callback.ScanLockCallback;
 import com.ttlock.bl.sdk.callback.InitLockCallback;
 import com.ttlock.bl.sdk.callback.ResetLockCallback;
@@ -112,41 +115,42 @@ import com.ttlock.bl.sdk.gateway.model.WiFi;
 import com.apartx.ttlock.ChannelCreator;
 
 public class TTLockPlugin extends CordovaPlugin {
-	private TTLockClient mTTLockClient = TTLockClient.getDefault();
+  private TTLockClient mTTLockClient = TTLockClient.getDefault();
+  private LockDfuClient mLockDfuClient = LockDfuClient.getDefault();
   private GatewayClient mGatewayClient = GatewayClient.getDefault();
   protected Context context;
 
-	// callbacks
-	CallbackContext discoverCallback;
-	private CallbackContext enableBluetoothCallback;
+  // callbacks
+  CallbackContext discoverCallback;
+  private CallbackContext enableBluetoothCallback;
 
-	private static final String TAG = "TTLockPlugin";
+  private static final String TAG = "TTLockPlugin";
 
-	// Android 23 requires new permissions for BluetoothLeScanner.startScan()
-	private CallbackContext permissionCallback;
+  // Android 23 requires new permissions for BluetoothLeScanner.startScan()
+  private CallbackContext permissionCallback;
 
-	private Boolean mIsScanning = false;
+  private Boolean mIsScanning = false;
 
-	private Map<String, ExtendedBluetoothDevice> mDevicesCache = new HashMap<String, ExtendedBluetoothDevice>();
+  private Map<String, ExtendedBluetoothDevice> mDevicesCache = new HashMap<String, ExtendedBluetoothDevice>();
 
-	public void onDestroy() {
+  public void onDestroy() {
 
-	}
+  }
 
-	public void onReset() {
+  public void onReset() {
 
-	}
+  }
 
-	@Override
-	public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-		LOG.d(TAG, "action = %s", action);
+  @Override
+  public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    LOG.d(TAG, "action = %s", action);
 
-		boolean validAction = true;
+    boolean validAction = true;
     java.lang.reflect.Method method;
 
     try {
       // if(action=="createNotificationChannel"){
-      //   createNotificationChannel(args,callbackContext);
+      // createNotificationChannel(args,callbackContext);
       // }
       // method = this.getClass().getMethod(action);
       method = TTLockPlugin.class.getMethod(action, CordovaArgs.class, CallbackContext.class);
@@ -169,7 +173,7 @@ public class TTLockPlugin extends CordovaPlugin {
       callbackContext.error(e.toString());
     }
     return true;
-	}
+  }
 
   public void lock_isScanning(CordovaArgs args, CallbackContext callbackContext) {
     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, mIsScanning);
@@ -192,17 +196,17 @@ public class TTLockPlugin extends CordovaPlugin {
 
   public void lock_requestBleEnable(CordovaArgs args, CallbackContext callbackContext) {
     mTTLockClient.requestBleEnable(cordova.getActivity());
-		callbackContext.success();
+    callbackContext.success();
   }
 
   public void lock_prepareBTService(CordovaArgs args, CallbackContext callbackContext) {
     mTTLockClient.prepareBTService(cordova.getActivity().getApplicationContext());
-		callbackContext.success();
+    callbackContext.success();
   }
 
   public void lock_stopBTService(CordovaArgs args, CallbackContext callbackContext) {
     mTTLockClient.stopBTService();
-		callbackContext.success();
+    callbackContext.success();
   }
 
   public void lock_startScan(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -236,6 +240,7 @@ public class TTLockPlugin extends CordovaPlugin {
         pluginResult.setKeepCallback(true);
         callbackContext.sendPluginResult(pluginResult);
       }
+
       @Override
       public void onFail(LockError error) {
         mIsScanning = false;
@@ -244,6 +249,63 @@ public class TTLockPlugin extends CordovaPlugin {
       }
     });
   }
+
+  public void lock_updateCheck (CordovaArgs args, CallbackContext callbackContext) throws
+    JSONException {
+      String lockData = args.getString(0);
+      String lockMac = args.getString(1);
+      Integer lockId = args.getInt(2);
+      String clientId = args.getString(3);
+      String access_token = args.getString(4);
+
+      mLockDfuClient.startDfu(cordova.getActivity().getApplicationContext(), clientId, access_token, lockId, lockData,
+              lockMac, new DfuCallback() {
+                @Override
+                public void onDfuSuccess(String deviceAddress) {
+                  JSONObject deviceObj = new JSONObject();
+                  try {
+                    deviceObj.put("success", 1);
+                  } catch (Exception e) {
+                    LOG.d(TAG, "startDfu error = %s", e.toString());
+                  }
+                  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
+                  callbackContext.sendPluginResult(pluginResult);
+                }
+
+                @Override
+                public void onStatusChanged(int status) {
+
+                }
+
+                @Override
+                public void onDfuAborted(String deviceAddress) {
+
+                }
+
+                @Override
+                public void onProgressChanged(String deviceAddress, int percent, float speed, float avgSpeed, int currentPart,
+                                              int partsTotal) {
+                  LOG.d(TAG, "percent:", percent);
+
+                  JSONObject deviceObj = new JSONObject();
+                  try {
+                    deviceObj.put("progress", percent);
+                  } catch (Exception e) {
+                    LOG.d(TAG, "startDfu error = %s", e.toString());
+                  }
+                  PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
+                  pluginResult.setKeepCallback(true);
+                  callbackContext.sendPluginResult(pluginResult);
+                }
+
+                @Override
+                public void onError(int errorCode, String errorContent) {
+                  LOG.d(TAG, "DfuCallback device found error = %s", errorContent);
+                  callbackContext.error(errorContent);
+                }
+
+              });
+    }
 
   public void lock_stopScan(CordovaArgs args, CallbackContext callbackContext) {
     mIsScanning = false;
@@ -261,7 +323,7 @@ public class TTLockPlugin extends CordovaPlugin {
     mTTLockClient.initLock(_device, new InitLockCallback() {
       @Override
       public void onInitLockSuccess(String lockData) {
-        //init success
+        // init success
         JSONObject deviceObj = new JSONObject();
         try {
           deviceObj.put("lockData", lockData);
@@ -276,7 +338,7 @@ public class TTLockPlugin extends CordovaPlugin {
 
       @Override
       public void onFail(LockError error) {
-        //failed
+        // failed
         LOG.d(TAG, "initLock onFail = %s", error.getErrorMsg());
         callbackContext.error(makeError(error));
       }
@@ -290,14 +352,15 @@ public class TTLockPlugin extends CordovaPlugin {
     mTTLockClient.resetLock(lockData, lockMac, new ResetLockCallback() {
       @Override
       public void onResetLockSuccess() {
-        // PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deviceObj);
+        // PluginResult pluginResult = new PluginResult(PluginResult.Status.OK,
+        // deviceObj);
         // callbackContext.sendPluginResult(pluginResult);
         callbackContext.success();
       }
 
       @Override
       public void onFail(LockError error) {
-        //failed
+        // failed
         LOG.d(TAG, "initLock onFail = %s", error.getErrorMsg());
         callbackContext.error(makeError(error));
       }
@@ -331,7 +394,7 @@ public class TTLockPlugin extends CordovaPlugin {
     });
   }
 
-   public void lock_getAudioState(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+  public void lock_getAudioState(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     String lockData = args.getString(0);
     String lockMac = args.getString(1);
     mTTLockClient.getMuteModeState(lockData, lockMac, new GetLockMuteModeStateCallback() {
@@ -632,24 +695,26 @@ public class TTLockPlugin extends CordovaPlugin {
     });
   }
 
-  public void lock_modifyFingerprintValidityPeriod(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+  public void lock_modifyFingerprintValidityPeriod(CordovaArgs args, CallbackContext callbackContext)
+      throws JSONException {
     long startDate = args.getLong(0);
     long endDate = args.getLong(1);
     String fingerprintNumber = args.getString(2);
     String lockData = args.getString(3);
     String lockMac = args.getString(4);
-    mTTLockClient.modifyFingerprintValidityPeriod(startDate, endDate, fingerprintNumber, lockData, lockMac, new ModifyFingerprintPeriodCallback() {
-      @Override
-      public void onModifyPeriodSuccess() {
-        callbackContext.success();
-      }
+    mTTLockClient.modifyFingerprintValidityPeriod(startDate, endDate, fingerprintNumber, lockData, lockMac,
+        new ModifyFingerprintPeriodCallback() {
+          @Override
+          public void onModifyPeriodSuccess() {
+            callbackContext.success();
+          }
 
-      @Override
-      public void onFail(LockError error) {
-        LOG.d(TAG, "deleteFingerprint onFail = %s", error.getErrorMsg());
-        callbackContext.error(makeError(error));
-      }
-    });
+          @Override
+          public void onFail(LockError error) {
+            LOG.d(TAG, "deleteFingerprint onFail = %s", error.getErrorMsg());
+            callbackContext.error(makeError(error));
+          }
+        });
   }
 
   public void lock_createCustomPasscode(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -658,18 +723,19 @@ public class TTLockPlugin extends CordovaPlugin {
     long endDate = args.getLong(2);
     String lockData = args.getString(3);
     String lockMac = args.getString(4);
-    mTTLockClient.createCustomPasscode(passCode, startDate, endDate, lockData, lockMac, new CreateCustomPasscodeCallback() {
-      @Override
-      public void onCreateCustomPasscodeSuccess(String passcode) {
-        callbackContext.success();
-      }
+    mTTLockClient.createCustomPasscode(passCode, startDate, endDate, lockData, lockMac,
+        new CreateCustomPasscodeCallback() {
+          @Override
+          public void onCreateCustomPasscodeSuccess(String passcode) {
+            callbackContext.success();
+          }
 
-      @Override
-      public void onFail(LockError error) {
-        LOG.d(TAG, "onCreateCustomPasscode onFail = %s", error.getErrorMsg());
-        callbackContext.error(makeError(error));
-      }
-    });
+          @Override
+          public void onFail(LockError error) {
+            LOG.d(TAG, "onCreateCustomPasscode onFail = %s", error.getErrorMsg());
+            callbackContext.error(makeError(error));
+          }
+        });
   }
 
   public void lock_getAllValidPasscodes(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -703,18 +769,19 @@ public class TTLockPlugin extends CordovaPlugin {
     long endDate = args.getLong(3);
     String lockData = args.getString(4);
     String lockMac = args.getString(5);
-    mTTLockClient.modifyPasscode(originalPassCode, newPassCode, startDate, endDate, lockData, lockMac, new ModifyPasscodeCallback() {
-      @Override
-      public void onModifyPasscodeSuccess() {
-        callbackContext.success();
-      }
+    mTTLockClient.modifyPasscode(originalPassCode, newPassCode, startDate, endDate, lockData, lockMac,
+        new ModifyPasscodeCallback() {
+          @Override
+          public void onModifyPasscodeSuccess() {
+            callbackContext.success();
+          }
 
-      @Override
-      public void onFail(LockError error) {
-        LOG.d(TAG, "onModifyPasscodeSuccess onFail = %s", error.getErrorMsg());
-        callbackContext.error(makeError(error));
-      }
-    });
+          @Override
+          public void onFail(LockError error) {
+            LOG.d(TAG, "onModifyPasscodeSuccess onFail = %s", error.getErrorMsg());
+            callbackContext.error(makeError(error));
+          }
+        });
   }
 
   public void lock_deletePasscode(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -767,15 +834,15 @@ public class TTLockPlugin extends CordovaPlugin {
     mTTLockClient.addICCard(startDate, endDate, lockData, lockMac, new AddICCardCallback() {
       @Override
       public void onEnterAddMode() {
-          JSONObject resultObj = new JSONObject();
-          try {
-            resultObj.put("status", "entered");
-          } catch (Exception e) {
-            LOG.d(TAG, "onEnterAddMode error = %s", e.toString());
-          }
-          PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
-          pluginResult.setKeepCallback(true);
-          callbackContext.sendPluginResult(pluginResult);
+        JSONObject resultObj = new JSONObject();
+        try {
+          resultObj.put("status", "entered");
+        } catch (Exception e) {
+          LOG.d(TAG, "onEnterAddMode error = %s", e.toString());
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, resultObj);
+        pluginResult.setKeepCallback(true);
+        callbackContext.sendPluginResult(pluginResult);
       }
 
       @Override
@@ -813,18 +880,19 @@ public class TTLockPlugin extends CordovaPlugin {
     String cardNum = args.getString(2);
     String lockData = args.getString(3);
     String lockMac = args.getString(4);
-    mTTLockClient.modifyICCardValidityPeriod(startDate, endDate, cardNum, lockData, lockMac, new ModifyICCardPeriodCallback() {
-      @Override
-      public void onModifyICCardPeriodSuccess() {
-        callbackContext.success();
-      }
+    mTTLockClient.modifyICCardValidityPeriod(startDate, endDate, cardNum, lockData, lockMac,
+        new ModifyICCardPeriodCallback() {
+          @Override
+          public void onModifyICCardPeriodSuccess() {
+            callbackContext.success();
+          }
 
-      @Override
-      public void onFail(LockError error) {
-        LOG.d(TAG, "modifyICCardValidityPeriod onFail = %s", error.getErrorMsg());
-        callbackContext.error(makeError(error));
-      }
-    });
+          @Override
+          public void onFail(LockError error) {
+            LOG.d(TAG, "modifyICCardValidityPeriod onFail = %s", error.getErrorMsg());
+            callbackContext.error(makeError(error));
+          }
+        });
   }
 
   public void lock_getAllValidICCards(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -905,31 +973,31 @@ public class TTLockPlugin extends CordovaPlugin {
   }
 
   public void lock_setPassageMode(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-	  //JSONObject modeData = args.getJSONObject(0);
-      Integer startDate = args.getInt(0);
-      Integer endDate = args.getInt(1);
-      JSONArray weekDays = args.getJSONArray(2);
-	  String lockData = args.getString(3);
-	  String lockMac = args.getString(4);
+    // JSONObject modeData = args.getJSONObject(0);
+    Integer startDate = args.getInt(0);
+    Integer endDate = args.getInt(1);
+    JSONArray weekDays = args.getJSONArray(2);
+    String lockData = args.getString(3);
+    String lockMac = args.getString(4);
     PassageModeConfig modeConfig = new PassageModeConfig();
     LOG.d(TAG, "setPassageMode onFail = %s");
     modeConfig.setModeType(PassageModeType.Weekly);
-    int[] mCircleWeeksArray = {1,2,3,4,5};//modeData["weekDays"];
-    modeConfig.setStartDate(startDate);//am: 8:00
+    int[] mCircleWeeksArray = { 1, 2, 3, 4, 5 };// modeData["weekDays"];
+    modeConfig.setStartDate(startDate);// am: 8:00
     modeConfig.setEndDate(endDate);
     modeConfig.setRepeatWeekOrDays(String.valueOf(weekDays));
-	  mTTLockClient.setPassageMode(modeConfig, lockData, lockMac, new SetPassageModeCallback() {
-        @Override
-        public void onSetPassageModeSuccess() {
-          callbackContext.success();
-        }
+    mTTLockClient.setPassageMode(modeConfig, lockData, lockMac, new SetPassageModeCallback() {
+      @Override
+      public void onSetPassageModeSuccess() {
+        callbackContext.success();
+      }
 
-        @Override
-        public void onFail(LockError lockError) {
-          LOG.d(TAG, "setPassageMode onFail = %s", lockError);
-          callbackContext.error(makeError(lockError));
-        }
-      });
+      @Override
+      public void onFail(LockError lockError) {
+        LOG.d(TAG, "setPassageMode onFail = %s", lockError);
+        callbackContext.error(makeError(lockError));
+      }
+    });
   }
 
   public void lock_clearPassageMode(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
@@ -950,8 +1018,8 @@ public class TTLockPlugin extends CordovaPlugin {
   }
 
   /*
-  * Gateway API section
-  */
+   * Gateway API section
+   */
 
   public void gateway_startScan(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     if (mIsScanning) {
@@ -1004,7 +1072,7 @@ public class TTLockPlugin extends CordovaPlugin {
     mGatewayClient.connectGateway(gatewayMac, new ConnectCallback() {
       @Override
       public void onConnectSuccess(ExtendedBluetoothDevice device) {
-        //init success
+        // init success
         JSONObject deviceObj = new JSONObject();
         try {
           deviceObj.put("status", "connected");
@@ -1017,7 +1085,7 @@ public class TTLockPlugin extends CordovaPlugin {
 
       @Override
       public void onDisconnected() {
-        //failed
+        // failed
         LOG.d(TAG, "connectGateway onDisconnected");
         JSONObject deviceObj = new JSONObject();
         try {
@@ -1038,12 +1106,12 @@ public class TTLockPlugin extends CordovaPlugin {
     configureGatewayInfo.userPwd = args.getString(2);
     configureGatewayInfo.ssid = args.getString(3);
     configureGatewayInfo.wifiPwd = args.getString(4);
-    
+
     LOG.d(TAG, "initGateway = %s", configureGatewayInfo.plugName);
     mGatewayClient.initGateway(configureGatewayInfo, new InitGatewayCallback() {
       @Override
       public void onInitGatewaySuccess(DeviceInfo deviceInfo) {
-        //init success
+        // init success
         JSONObject deviceObj = new JSONObject();
         try {
           deviceObj.put("modelNum", deviceInfo.getModelNum());
@@ -1058,7 +1126,7 @@ public class TTLockPlugin extends CordovaPlugin {
 
       @Override
       public void onFail(GatewayError error) {
-        //failed
+        // failed
         LOG.d(TAG, "initGateway onFail = %s", error.getDescription());
         callbackContext.error(makeError(error));
       }
@@ -1067,7 +1135,7 @@ public class TTLockPlugin extends CordovaPlugin {
 
   public void gateway_scanWiFi(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
     String gatewayMac = args.getString(0);
-    
+
     LOG.d(TAG, "scanWiFiByGateway = %s", gatewayMac);
     mGatewayClient.scanWiFiByGateway(gatewayMac, new ScanWiFiByGatewayCallback() {
       @Override
@@ -1174,7 +1242,7 @@ public class TTLockPlugin extends CordovaPlugin {
       resultObj.put("error", error.getDescription());
       resultObj.put("message", error.getDescription());
     } catch (Exception e) {}
-    
+
     return resultObj;
   }
 
@@ -1187,4 +1255,3 @@ public class TTLockPlugin extends CordovaPlugin {
     return context;
   }
 }
-
